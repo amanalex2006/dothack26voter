@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Niche Research Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;700&display=swap');
+        
+        :root {
+            --bg-primary: #fcfaf7;
+            --text-primary: #1a1c2c;
+            --accent-warm: #d97706;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        h1, h2, h3, .heading-font {
+            font-family: 'Outfit', sans-serif;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-10 pb-6 border-b border-gray-200">
+            <div>
+                <a href="/" class="text-xs text-amber-700 hover:text-amber-900 font-bold uppercase tracking-wider flex items-center mb-1">
+                    ← Back to Dashboard
+                </a>
+                <h1 class="text-3xl font-bold">Admin Console</h1>
+            </div>
+            
+            <div id="adminProfile" class="flex items-center gap-4">
+                <!-- Injected by JS -->
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Left: Create User Form -->
+            <div class="md:col-span-1">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h2 class="text-xl font-bold mb-4 heading-font">Create User</h2>
+                    <p class="text-xs text-gray-500 mb-6">Register a new user account with credentials. Users can then log in to vote on the research tracks.</p>
+                    
+                    <form id="createUserForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1" for="name">Full Name</label>
+                            <input class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-500 transition-colors" type="text" id="name" required placeholder="e.g. Aman Alex">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1" for="handle">Handle / Username</label>
+                            <input class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-500 transition-colors" type="text" id="handle" required placeholder="e.g. aman">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1" for="password">Password</label>
+                            <input class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-500 transition-colors" type="password" id="password" required placeholder="••••••••">
+                        </div>
+                        
+                        <div id="formMessage" class="hidden text-xs py-2 px-3 rounded-lg"></div>
+
+                        <button class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors shadow-sm" type="submit">
+                            Create Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right: Users List -->
+            <div class="md:col-span-2">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm min-h-[400px]">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold heading-font">Registered Users</h2>
+                        <span id="userCount" class="text-xs bg-gray-100 text-gray-600 font-bold px-2 py-1 rounded-full">0 Accounts</span>
+                    </div>
+
+                    <div id="usersList" class="space-y-3">
+                        <!-- Loaded by JS -->
+                        <div class="text-center py-10 text-gray-400 text-sm">Loading users list...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Color hashing function for avatar
+        function getAvatarColorClass(handle) {
+            let hash = 0;
+            for (let i = 0; i < handle.length; i++) {
+                hash = handle.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const colors = [
+                'bg-amber-600 text-white',
+                'bg-emerald-600 text-white',
+                'bg-indigo-600 text-white',
+                'bg-rose-600 text-white',
+                'bg-violet-600 text-white',
+                'bg-sky-600 text-white',
+                'bg-cyan-600 text-white'
+            ];
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function renderAvatar(initials, handle, size = '10') {
+            const colorClass = getAvatarColorClass(handle);
+            return `
+                <div class="w-${size} h-${size} rounded-full ${colorClass} flex items-center justify-center font-bold text-sm tracking-tight shadow-sm select-none">
+                    ${initials}
+                </div>
+            `;
+        }
+
+        // Initialize admin panel
+        async function initAdmin() {
+            try {
+                const res = await fetch('/api/init');
+                const data = await res.json();
+                
+                // If not logged in as admin, redirect to home
+                if (!data.user || data.user.handle !== 'admin') {
+                    window.location.href = '/';
+                    return;
+                }
+
+                // Render admin header details
+                const profileContainer = document.getElementById('adminProfile');
+                profileContainer.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        ${renderAvatar(data.user.initials, data.user.handle)}
+                        <div class="hidden sm:block text-right">
+                            <div class="font-bold text-sm leading-none">${data.user.name}</div>
+                            <div class="text-xs text-gray-500">@${data.user.handle}</div>
+                        </div>
+                    </div>
+                    <button onclick="logoutAdmin()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors">
+                        Logout
+                    </button>
+                `;
+
+                // Load users list
+                loadUsers();
+            } catch (err) {
+                console.error(err);
+                window.location.href = '/';
+            }
+        }
+
+        async function logoutAdmin() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadUsers() {
+            const listEl = document.getElementById('usersList');
+            const countEl = document.getElementById('userCount');
+            
+            try {
+                const res = await fetch('/api/admin/users');
+                const data = await res.json();
+                
+                if (data.error) {
+                    listEl.innerHTML = `<div class="text-center py-10 text-red-500 text-sm">Failed to load users: ${data.error}</div>`;
+                    return;
+                }
+
+                countEl.innerText = `${data.users.length} Accounts`;
+                
+                if (data.users.length === 0) {
+                    listEl.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm">No registered users yet.</div>`;
+                    return;
+                }
+
+                listEl.innerHTML = data.users.map(u => `
+                    <div class="flex justify-between items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            ${renderAvatar(u.initials, u.handle, '8')}
+                            <div>
+                                <h4 class="font-bold text-sm">${u.name}</h4>
+                                <p class="text-xs text-gray-500">@${u.handle}</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.handle === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}">
+                            ${u.handle === 'admin' ? 'Admin' : 'User'}
+                        </span>
+                    </div>
+                `).join('');
+                
+            } catch (err) {
+                listEl.innerHTML = `<div class="text-center py-10 text-red-500 text-sm">Failed to load users.</div>`;
+            }
+        }
+
+        // Handle user creation form submission
+        document.getElementById('createUserForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const handle = document.getElementById('handle').value;
+            const password = document.getElementById('password').value;
+            const msgEl = document.getElementById('formMessage');
+            
+            msgEl.className = "hidden text-xs py-2 px-3 rounded-lg";
+            
+            try {
+                const res = await fetch('/api/admin/create_user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, handle, password })
+                });
+                
+                const data = await res.json();
+                
+                if (data.error) {
+                    msgEl.className = "text-xs py-2 px-3 rounded-lg bg-red-100 text-red-700 block";
+                    msgEl.innerText = data.error;
+                } else {
+                    msgEl.className = "text-xs py-2 px-3 rounded-lg bg-green-100 text-green-700 block";
+                    msgEl.innerText = "User account created successfully!";
+                    
+                    // Reset form fields
+                    document.getElementById('createUserForm').reset();
+                    
+                    // Reload users list
+                    loadUsers();
+                }
+            } catch (err) {
+                msgEl.className = "text-xs py-2 px-3 rounded-lg bg-red-100 text-red-700 block";
+                msgEl.innerText = "Connection error. Failed to create user.";
+            }
+        };
+
+        window.onload = initAdmin;
+    </script>
+</body>
+</html>

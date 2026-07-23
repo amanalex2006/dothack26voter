@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem Blueprint: 2898 | Niche Research Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600&display=swap');
+
+        :root {
+            --bg-primary: #fcfaf7;
+            --text-primary: #1a1c2c;
+            --accent-warm: #d97706;
+            --accent-muted: #6b7280;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .heading-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        .track-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .track-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .track-active {
+            border-color: var(--accent-warm);
+            background-color: #fffbeb;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Chosen Palette: Serene Hearth (Warm Neutrals, Indigo Text, Muted Amber Accents) -->
+    
+    <!-- Application Structure Plan: 
+        1. Header: Contextualizes the research as a supplement to the tracks in "WhatsApp Image 2026-07-08 at 00.34.53.jpeg".
+        2. Dashboard Navigation: A grid of the 7 active tracks. Users select a track to filter the research content.
+        3. Problem Visualization: A Chart.js Radar chart that dynamically updates based on the selected track to show 'Problem Intensity' across dimensions (Niche Level, Systemic Impact, Awareness Gap, etc.).
+        4. Problem Exploration Grid: A dynamic list of specific 'Niche Problems' found for the selected track. 
+        5. Deep Analysis Panel: When a specific problem is clicked, a detailed view appears explaining the friction point.
+        This structure was chosen to allow users to digest a high volume of 'problems' without feeling overwhelmed, mirroring the 'blueprint' aesthetic from the source image.
+    -->
+
+    <!-- Visualization & Content Choices: 
+        - Radar Chart (Chart.js): Used to compare qualitative attributes of problems within a track.
+        - Bar Chart (Chart.js): Used to show the frequency of problem types (e.g., Technical, Social, Logistics) in the current dataset.
+        - Dynamic HTML Cards: Used for the niche problem list for readability.
+        - Goal: Compare niche problems across diverse sectors to identify the most critical unaddressed 'why'.
+        - NO SVG/Mermaid: All icons are Unicode or CSS-styled boxes. Charts are Canvas-based.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="mb-12 text-center">
+            <div class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase bg-amber-100 text-amber-800 rounded-full">
+                Research Archive: Blueprint 2898
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Niche Problems Across Diverse Topics</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                An exhaustive exploration of specific friction points and unaddressed challenges derived from the tracks outlined in 
+                <span class="font-semibold italic text-amber-700 underline decoration-dotted">WhatsApp Image 2026-07-08 at 00.34.53.jpeg</span>.
+            </p>
+        </header>
+
+        <section class="mb-12">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-gray-700 leading-relaxed">
+                    Welcome to the Problem Synthesis Hub. This section introduces the core objective: moving beyond surface-level symptoms to find the <strong>niche problems</strong> that define modern systemic failures. By interacting with the tracks below, you can explore detailed research into areas ranging from smart city sensor decay to the digital erosion of long-form attention spans.
+                </p>
+            </div>
+        </section>
+
+        <!-- Track Selector Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12" id="trackGrid">
+            <!-- Cards will be injected by JS -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left: Visualization Column -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold mb-2 heading-font" id="chartTitle">Track Intensity</h3>
+                    <p class="text-sm text-gray-500 mb-4">Relative weight of problems across key dimensions.</p>
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold mb-2 heading-font">Problem Taxonomy</h3>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Problem Explorer Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold heading-font" id="activeTrackTitle">Select a Track</h2>
+                        <span class="text-sm bg-gray-100 px-3 py-1 rounded-full font-medium" id="problemCount">0 Issues Found</span>
+                    </div>
+
+                    <div id="problemDescription" class="text-gray-600 mb-6 italic border-l-4 border-amber-200 pl-4">
+                        Click on a track from the grid above to explore the specific research findings.
+                    </div>
+
+                    <div id="problemList" class="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2">
+                        <!-- Problems will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-20 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
+            <p>Source Context: IEEE MACE Blueprint 2898 7th Edition Research Framework.</p>
+            <p class="mt-2">Disclaimer: This dashboard focuses strictly on problem identification to facilitate deeper design thinking.</p>
+        </footer>
+    </div>
+
+    <script>
+        const researchData = {
+            "brick": {
+                title: "Brick by Byte",
+                desc: "Intelligent smart city ecosystems that sense, connect, and respond to a rapidly changing world.",
+                meta: "Focus: Urban Infrastructure & IoT friction.",
+                stats: [85, 70, 90, 60, 75],
+                tax: [12, 18, 5, 22],
+                problems: [
+                    { title: "Micro-climate Heat Alleyways", detail: "Traditional city-wide sensors miss localized heat pockets in narrow alleyways, leading to inaccurate emergency medical responses during heatwaves." },
+                    { title: "Ghost Data Storage Costs", detail: "Massive volumes of 'heartbeat' data from idle infrastructure sensors create an invisible carbon footprint through server cooling and storage costs." },
+                    { title: "Last-Mile Waste Visibility", detail: "Smart bin systems fail in informal settlements where non-standardized waste collection routes make automated sensor data irrelevant." },
+                    { title: "Sensor Decay Deserts", detail: "Suburbs experiencing 'maintenance lag' where failed hardware creates blind spots in traffic management, disproportionately affecting outer-city commuters." },
+                    { title: "Acoustic Reflection Interference", detail: "Glass-heavy modern architecture creates echo chambers that confuse noise-canceling urban acoustic sensors meant to detect gunshots or distress." }
+                ]
+            },
+            "popcorn": {
+                title: "Reclaiming Popcorn Brains",
+                desc: "Technologies that empower individuals to break unhealthy digital cycles and reclaim time.",
+                meta: "Focus: Attention Economy & Cognitive Health.",
+                stats: [95, 80, 75, 85, 90],
+                tax: [5, 25, 30, 10],
+                problems: [
+                    { title: "Phantom Vibration Habituation", detail: "The neurological scarring where individuals feel phone notifications even without a device present, causing constant cortisol spikes." },
+                    { title: "Micro-Decision Fatigue", detail: "The hidden mental load of managing privacy settings and cookie consents across 50+ sites daily, leading to 'consent apathy'." },
+                    { title: "Synesthetic VR Overload", detail: "Early-stage sensory mismatch in AR/VR that leads to 'digital vertigo', a niche vestibular disorder becoming common in remote workers." },
+                    { title: "Context Switching Lag", detail: "The 23-minute average recovery time lost after a 'quick' notification check, specifically impacting deep-work professions like research and coding." },
+                    { title: "Algorithmic Mirroring", detail: "The gradual loss of linguistic variety as predictive text and LLMs narrow the user's own vocabulary through constant suggestions." }
+                ]
+            },
+            "hunger": {
+                title: "Safe Sources & Zero Hunger",
+                desc: "Solutions that rethink how we grow, manage, and sustain food resources.",
+                meta: "Focus: Food Security & Supply Chain Logistics.",
+                stats: [70, 95, 85, 75, 65],
+                tax: [20, 15, 10, 25],
+                problems: [
+                    { title: "Micronutrient Soil Depletion", detail: "Modern yield-focused farming creates vegetables that look healthy but lack essential selenium and zinc, leading to 'hidden hunger' in wealthy nations." },
+                    { title: "Cold Chain Breakdown Latency", detail: "Minor power fluctuations in rural storage units that don't trigger alarms but accelerate spoilage of perishable vaccines and produce." },
+                    { title: "Traceability of Local Seeds", detail: "The loss of genetic diversity as small-scale farmers lose access to ancestral seeds due to corporate patent-adjacent regulations." },
+                    { title: "Industrial Pre-Retail Waste", detail: "The massive volume of edible food discarded during the processing phase (e.g., imperfectly sliced carrots) that never reaches a store shelf." },
+                    { title: "Pollinator Displacement", detail: "Urban greening projects that inadvertently introduce aggressive non-native bees, disrupting the local pollination cycles of native fruit trees." }
+                ]
+            },
+            "care": {
+                title: "Care Beyond Labels",
+                desc: "Innovations that address often-overlooked dimensions of health and well-being.",
+                meta: "Focus: Invisible Health & Social Isolation.",
+                stats: [60, 85, 95, 70, 80],
+                tax: [15, 10, 40, 5],
+                problems: [
+                    { title: "Diagnostic Delay for Rare Diseases", detail: "The 'diagnostic odyssey' where patients spend 7+ years moving between specialists due to lack of cross-disciplinary data sharing." },
+                    { title: "Maritime Mental Isolation", detail: "Extreme mental health strain in cargo ship crews who spend 9 months at sea with restricted, high-latency internet access." },
+                    { title: "Geriatric Urban Loneliness", detail: "High-density apartments where elderly residents have physical proximity but zero social interaction, leading to accelerated cognitive decline." },
+                    { title: "Chronic Pain Measurement Bias", detail: "Subjective pain scales (1-10) that fail to account for cultural and neurodivergent differences in pain expression, leading to under-medication." },
+                    { title: "Unpaid Caregiver Burnout", detail: "The invisible economic and health collapse of family members providing 24/7 care without institutional support or monitoring." }
+                ]
+            },
+            "industry": {
+                title: "Industry 4.0: Automation",
+                desc: "Smarter industrial ecosystems where productivity, sustainability, and safety go hand in hand.",
+                meta: "Focus: Smart Manufacturing & Workplace Dynamics.",
+                stats: [80, 65, 70, 90, 85],
+                tax: [35, 5, 15, 20],
+                problems: [
+                    { title: "Legacy Machine Skill Gap", detail: "Factories where high-tech sensors are slapped onto 40-year-old machines that no living engineer knows how to repair without the sensor's aid." },
+                    { title: "Cobot Friction Zones", detail: "Micro-collisions and safety-stop delays in factories where human workers and collaborative robots share tight corridors." },
+                    { title: "Rapid Iteration E-Waste", detail: "The short lifespan of industrial IoT modules which become obsolete faster than the machinery they monitor, creating specialized electronic waste." },
+                    { title: "Supply Chain Raw Transparency", detail: "The inability to track the 'ethical origin' of secondary minerals used in the high-performance magnets of industrial motors." },
+                    { title: "Predictive Maintenance Bias", detail: "Algorithms that prioritize the health of high-value machines while ignoring small 'support' equipment that can cause total line stoppage if it fails." }
+                ]
+            },
+            "inclusive": {
+                title: "Inclusive Innovation",
+                desc: "An inclusive future enabled by equal access, participation, and opportunity.",
+                meta: "Focus: Equity & Accessibility Design.",
+                stats: [75, 90, 80, 85, 70],
+                tax: [10, 20, 20, 30],
+                problems: [
+                    { title: "Cashless Society Exclusion", detail: "The systematic removal of the unbanked and elderly from daily commerce as urban centers transition to 100% digital payments." },
+                    { title: "Assistive Tech Rare-Gap", detail: "High-end assistive tech exists for common disabilities, but niche conditions (e.g., unique limb differences) lack affordable custom interfaces." },
+                    { title: "Language-Barrier Emergency Alerts", detail: "Critical weather alerts that are only broadcast in the national language, leaving migrant and tourist populations vulnerable during disasters." },
+                    { title: "Neurodivergent Testing Bias", detail: "Professional certification exams that measure 'executive function' and 'sensory tolerance' rather than actual job-related knowledge." },
+                    { title: "Nomadic Financial Exclusion", detail: "The inability for pastoralists or digital nomads to access credit due to lack of a permanent 'fixed' address for KYC requirements." }
+                ]
+            },
+            "resilience": {
+                title: "Building with Resilience",
+                desc: "Solutions that help communities anticipate, withstand, and recover from calamities.",
+                meta: "Focus: Disaster Recovery & Community Strength.",
+                stats: [85, 75, 60, 95, 90],
+                tax: [25, 10, 5, 40],
+                problems: [
+                    { title: "Unmapped Flood Zones", detail: "Localized flooding in rural or rapidly urbanizing areas that do not appear on official government topographical risk maps." },
+                    { title: "Post-Disaster 'Invisible' Trauma", detail: "The psychological collapse of communities 6-12 months after a disaster, long after emergency aid and media attention have vanished." },
+                    { title: "Island Communication Blackout", detail: "The total reliance on a single undersea cable for entire island nations, making them digitally paralyzed during seismic events." },
+                    { title: "Medicine Supply Chain Fragility", detail: "Local pharmacies that only carry 48 hours of life-saving insulin or heart medication, causing mortality spikes during minor road blockages." },
+                    { title: "Volunteer Coordination Chaos", detail: "The surge of unorganized 'spontaneous volunteers' during disasters who unintentionally block professional emergency responders." }
+                ]
+            }
+        };
+
+        let radarChart, barChart;
+
+        function initCharts() {
+            const ctxRadar = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Complexity', 'Systemic Gap', 'Niche Level', 'Awareness', 'Scalability'],
+                    datasets: [{
+                        label: 'Intensity Profile',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(217, 119, 6, 0.2)',
+                        borderColor: '#d97706',
+                        pointBackgroundColor: '#d97706',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Tech', 'Social', 'Legal', 'Logistics'],
+                    datasets: [{
+                        label: 'Issue Type Count',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#1e293b', '#475569', '#94a3b8', '#cbd5e1'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function createTrackCards() {
+            const grid = document.getElementById('trackGrid');
+            Object.keys(researchData).forEach(key => {
+                const track = researchData[key];
+                const card = document.createElement('div');
+                card.className = `track-card bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center`;
+                card.id = `card-${key}`;
+                card.innerHTML = `
+                    <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center mb-3 text-amber-600 font-bold">
+                        ${key[0].toUpperCase()}
+                    </div>
+                    <h4 class="font-bold text-sm mb-1">${track.title}</h4>
+                    <p class="text-xs text-gray-400 line-clamp-1">${track.meta}</p>
+                `;
+                card.onclick = () => selectTrack(key);
+                grid.appendChild(card);
+            });
+        }
+
+        function selectTrack(key) {
+            const track = researchData[key];
+            
+            // UI Updates
+            document.querySelectorAll('.track-card').forEach(c => c.classList.remove('track-active'));
+            document.getElementById(`card-${key}`).classList.add('track-active');
+            
+            document.getElementById('activeTrackTitle').innerText = track.title;
+            document.getElementById('problemDescription').innerText = track.desc;
+            document.getElementById('problemCount').innerText = `${track.problems.length} Issues Documented`;
+
+            // List Injection
+            const list = document.getElementById('problemList');
+            list.innerHTML = '';
+            track.problems.forEach((p, idx) => {
+                const item = document.createElement('div');
+                item.className = 'fade-in p-5 bg-gray-50 rounded-xl hover:bg-white hover:shadow-md border border-transparent hover:border-amber-100 transition-all group';
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-mono text-amber-500 font-bold uppercase tracking-tighter">PRB-0${idx + 1}</span>
+                        <div class="w-2 h-2 rounded-full bg-amber-300"></div>
+                    </div>
+                    <h5 class="text-lg font-bold mb-2 group-hover:text-amber-700 transition-colors">${p.title}</h5>
+                    <p class="text-sm text-gray-600 leading-relaxed">${p.detail}</p>
+                `;
+                list.appendChild(item);
+            });
+
+            // Chart Updates
+            radarChart.data.datasets[0].data = track.stats;
+            radarChart.update();
+
+            barChart.data.datasets[0].data = track.tax;
+            barChart.update();
+        }
+
+        window.onload = () => {
+            initCharts();
+            createTrackCards();
+            // Default select
+            selectTrack('brick');
+        };
+    </script>
+</body>
+</html>

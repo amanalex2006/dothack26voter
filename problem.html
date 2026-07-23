@@ -236,6 +236,176 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- Tool 3: Lean Problem-Solution Matrix -->
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-8 mt-8">
+                        <h3 class="text-xl font-bold text-emerald-900 heading-font mb-2">📋 Lean Problem-Solution Matrix</h3>
+                        <p class="text-sm text-emerald-700 mb-4">Clearly define the problem space before writing code.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-800 mb-1">Core Problem Statement (<span id="t3-char1">0</span>/280)</label>
+                                <textarea id="t3-prob" onkeyup="updateT3(this, 't3-char1', 280)" maxlength="280" class="w-full rounded border-emerald-200 p-2 text-sm focus:ring-emerald-500" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-800 mb-1">Target User Persona & Friction Point (<span id="t3-char2">0</span>/280)</label>
+                                <textarea id="t3-user" onkeyup="updateT3(this, 't3-char2', 280)" maxlength="280" class="w-full rounded border-emerald-200 p-2 text-sm focus:ring-emerald-500" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-800 mb-1">5 Whys Root-Cause Breakdown (<span id="t3-char3">0</span>/500)</label>
+                                <textarea id="t3-whys" onkeyup="updateT3(this, 't3-char3', 500)" maxlength="500" class="w-full rounded border-emerald-200 p-2 text-sm focus:ring-emerald-500" rows="3"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-800 mb-1">Proposed Solution & Unfair Advantage (<span id="t3-char4">0</span>/280)</label>
+                                <textarea id="t3-sol" onkeyup="updateT3(this, 't3-char4', 280)" maxlength="280" class="w-full rounded border-emerald-200 p-2 text-sm focus:ring-emerald-500" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-emerald-800 mb-1">Critical Assumptions Checklist</label>
+                                <div class="space-y-2">
+                                    <input type="text" id="t3-ass1" onkeyup="saveT3()" class="w-full rounded border-emerald-200 p-2 text-sm focus:ring-emerald-500" placeholder="Assumption 1">
+                                    <input type="text" id="t3-ass2" onkeyup="saveT3()" class="w-full rounded border-emerald-200 p-2 text-sm focus:ring-emerald-500" placeholder="Assumption 2">
+                                    <input type="text" id="t3-ass3" onkeyup="saveT3()" class="w-full rounded border-emerald-200 p-2 text-sm focus:ring-emerald-500" placeholder="Assumption 3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 4: Interactive User Journey Mapper -->
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-bold text-blue-900 heading-font mb-2">🗺️ Interactive User Journey Mapper</h3>
+                        <p class="text-sm text-blue-700 mb-4">Map out the step-by-step user experience and pinpoint friction.</p>
+                        <div class="flex overflow-x-auto pb-4 gap-4" id="t4-timeline">
+                            <!-- Cards added here -->
+                        </div>
+                        <button onclick="addJourneyStep()" class="mt-2 text-xs bg-blue-600 text-white px-3 py-1.5 rounded font-bold hover:bg-blue-700">+ Add Step</button>
+                    </div>
+
+                    <!-- Tool 5: Judge Rubric Self-Assessment -->
+                    <div class="bg-purple-50 border border-purple-100 rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-bold text-purple-900 heading-font mb-2">⚖️ Judge Rubric Self-Assessment</h3>
+                        <p class="text-sm text-purple-700 mb-4">Score your solution across 4 dimensions (0-10) to see your weak spots.</p>
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <div class="flex-1 w-full space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-sm font-bold text-purple-800 mb-1"><span>Problem & Impact</span> <span id="t5-val1">0</span></div>
+                                    <input type="range" id="t5-s1" min="0" max="10" value="0" class="w-full accent-purple-600" oninput="updateT5()">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm font-bold text-purple-800 mb-1"><span>Technical Feasibility</span> <span id="t5-val2">0</span></div>
+                                    <input type="range" id="t5-s2" min="0" max="10" value="0" class="w-full accent-purple-600" oninput="updateT5()">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm font-bold text-purple-800 mb-1"><span>Execution & Originality</span> <span id="t5-val3">0</span></div>
+                                    <input type="range" id="t5-s3" min="0" max="10" value="0" class="w-full accent-purple-600" oninput="updateT5()">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm font-bold text-purple-800 mb-1"><span>Presentation & Story</span> <span id="t5-val4">0</span></div>
+                                    <input type="range" id="t5-s4" min="0" max="10" value="0" class="w-full accent-purple-600" oninput="updateT5()">
+                                </div>
+                            </div>
+                            <div class="w-40 h-40 rounded-full border-8 border-purple-200 flex items-center justify-center flex-col bg-white shrink-0">
+                                <span class="text-xs text-purple-500 font-bold uppercase">Weighted Avg</span>
+                                <span class="text-4xl font-bold text-purple-900" id="t5-avg">0.0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 6: 3-Minute Pitch Builder -->
+                    <div class="bg-rose-50 border border-rose-100 rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-bold text-rose-900 heading-font mb-2">🎤 3-Minute Pitch Builder</h3>
+                        <p class="text-sm text-rose-700 mb-4">Draft your final pitch script. Stay within the time allocations.</p>
+                        
+                        <div class="flex h-3 w-full rounded-full overflow-hidden mb-6 bg-gray-200">
+                            <div class="bg-rose-400" style="width: 16.6%"></div>
+                            <div class="bg-rose-500" style="width: 41.6%"></div>
+                            <div class="bg-rose-600" style="width: 25%"></div>
+                            <div class="bg-rose-700" style="width: 16.8%"></div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-rose-400">
+                                <label class="flex justify-between text-sm font-bold text-rose-800 mb-1"><span>0:00-0:30: Problem Hook & User Pain</span> <span class="text-xs font-normal">(<span id="t6-c1">0</span>/200)</span></label>
+                                <textarea id="t6-1" onkeyup="updateT6(this, 't6-c1', 200)" maxlength="200" class="w-full border-0 p-0 text-sm focus:ring-0 resize-none" rows="2" placeholder="Start with a relatable story or shocking statistic..."></textarea>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-rose-500">
+                                <label class="flex justify-between text-sm font-bold text-rose-800 mb-1"><span>0:30-1:45: Live Product Demo Walkthrough</span> <span class="text-xs font-normal">(<span id="t6-c2">0</span>/500)</span></label>
+                                <textarea id="t6-2" onkeyup="updateT6(this, 't6-c2', 500)" maxlength="500" class="w-full border-0 p-0 text-sm focus:ring-0 resize-none" rows="4" placeholder="Show, don't tell. Focus on the 'aha' moment..."></textarea>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-rose-600">
+                                <label class="flex justify-between text-sm font-bold text-rose-800 mb-1"><span>1:45-2:30: Technical Architecture & Secret Sauce</span> <span class="text-xs font-normal">(<span id="t6-c3">0</span>/400)</span></label>
+                                <textarea id="t6-3" onkeyup="updateT6(this, 't6-c3', 400)" maxlength="400" class="w-full border-0 p-0 text-sm focus:ring-0 resize-none" rows="3" placeholder="Explain the complex parts simply. What's the clever hack?"></textarea>
+                            </div>
+                            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-rose-700">
+                                <label class="flex justify-between text-sm font-bold text-rose-800 mb-1"><span>2:30-3:00: Impact & Future Vision</span> <span class="text-xs font-normal">(<span id="t6-c4">0</span>/200)</span></label>
+                                <textarea id="t6-4" onkeyup="updateT6(this, 't6-c4', 200)" maxlength="200" class="w-full border-0 p-0 text-sm focus:ring-0 resize-none" rows="2" placeholder="Scale and business model. End with a strong call to action..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 7: Curated Dataset & API Registry -->
+                    <div class="bg-teal-50 border border-teal-100 rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-bold text-teal-900 heading-font mb-2">🔌 Curated Dataset & API Registry</h3>
+                        <p class="text-sm text-teal-700 mb-4">Fast-track your hack with free, reliable APIs.</p>
+                        
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="t7-search" onkeyup="filterApis()" placeholder="Search APIs..." class="flex-1 rounded border-teal-200 p-2 text-sm">
+                            <select id="t7-domain" onchange="filterApis()" class="rounded border-teal-200 p-2 text-sm bg-white">
+                                <option value="All">All Domains</option>
+                                <option value="Weather">Weather</option>
+                                <option value="Data">Data</option>
+                                <option value="Games">Games</option>
+                                <option value="Science">Science</option>
+                                <option value="Books">Books</option>
+                                <option value="Dev">Dev</option>
+                                <option value="News">News</option>
+                                <option value="Animals">Animals</option>
+                                <option value="Finance">Finance</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2" id="t7-grid">
+                            <!-- Cards rendered via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Tool 8: Idea Forking / What-If Generator -->
+                    <div class="bg-yellow-50 border border-yellow-100 rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-bold text-yellow-900 heading-font mb-2">💡 Idea Forking / What-If Generator</h3>
+                        <p class="text-sm text-yellow-700 mb-4">Combine random users, tech, and constraints to break creative blocks.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-yellow-800 mb-1">Target User</label>
+                                <select id="t8-user" class="w-full rounded border-yellow-200 p-2 text-sm bg-white">
+                                    <!-- Options via JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-yellow-800 mb-1">Core Technology</label>
+                                <select id="t8-tech" class="w-full rounded border-yellow-200 p-2 text-sm bg-white">
+                                    <!-- Options via JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-yellow-800 mb-1">Unique Constraint</label>
+                                <select id="t8-const" class="w-full rounded border-yellow-200 p-2 text-sm bg-white">
+                                    <!-- Options via JS -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 mb-4">
+                            <button onclick="t8Randomize()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-4 py-2 rounded text-sm transition">🎲 Generate Combo</button>
+                            <button onclick="t8Save()" class="bg-white border border-yellow-300 text-yellow-800 hover:bg-yellow-100 font-bold px-4 py-2 rounded text-sm transition">💾 Save Combo</button>
+                        </div>
+
+                        <div class="p-4 bg-white rounded-lg border-2 border-dashed border-yellow-300 text-center mb-6">
+                            <p class="text-lg font-medium text-gray-800" id="t8-output">Click Generate to spark an idea!</p>
+                        </div>
+
+                        <div id="t8-saved" class="space-y-2">
+                            <!-- Saved ideas via JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -675,6 +845,12 @@
             if (tabId === 'tools') {
                 loadPitfalls();
                 if (document.getElementById('budgetTableBody').children.length === 0) addBudgetRow();
+                loadT3();
+                loadT4();
+                loadT5();
+                loadT6();
+                renderApis(apiData);
+                initT8();
             }
         }
 
@@ -754,6 +930,256 @@
                     if (checks[id]) cb.checked = true;
                 });
             }
+        }
+
+        // --- Tool 3: Lean Matrix ---
+        function updateT3(el, counterId, max) {
+            document.getElementById(counterId).textContent = el.value.length;
+            saveT3();
+        }
+        function saveT3() {
+            const data = {
+                prob: document.getElementById('t3-prob').value,
+                user: document.getElementById('t3-user').value,
+                whys: document.getElementById('t3-whys').value,
+                sol: document.getElementById('t3-sol').value,
+                ass1: document.getElementById('t3-ass1').value,
+                ass2: document.getElementById('t3-ass2').value,
+                ass3: document.getElementById('t3-ass3').value
+            };
+            localStorage.setItem(`t3_${problemKey}`, JSON.stringify(data));
+        }
+        function loadT3() {
+            const raw = localStorage.getItem(`t3_${problemKey}`);
+            if (raw) {
+                const data = JSON.parse(raw);
+                document.getElementById('t3-prob').value = data.prob || '';
+                document.getElementById('t3-user').value = data.user || '';
+                document.getElementById('t3-whys').value = data.whys || '';
+                document.getElementById('t3-sol').value = data.sol || '';
+                document.getElementById('t3-ass1').value = data.ass1 || '';
+                document.getElementById('t3-ass2').value = data.ass2 || '';
+                document.getElementById('t3-ass3').value = data.ass3 || '';
+                
+                ['prob', 'user', 'whys', 'sol'].forEach((k, i) => {
+                    const el = document.getElementById('t3-' + k);
+                    if(el) document.getElementById(`t3-char${i+1}`).textContent = el.value.length;
+                });
+            }
+        }
+
+        // --- Tool 4: Journey Mapper ---
+        let journeySteps = [];
+        function addJourneyStep(data = { label: 'New Step', friction: 'None', pain: '', feat: '' }) {
+            journeySteps.push(data);
+            renderJourney();
+            saveT4();
+        }
+        function renderJourney() {
+            const container = document.getElementById('t4-timeline');
+            container.innerHTML = '';
+            journeySteps.forEach((s, i) => {
+                const colors = {
+                    'None': 'bg-gray-100 border-gray-200 text-gray-700',
+                    'Minor': 'bg-yellow-50 border-yellow-200 text-yellow-700',
+                    'Major': 'bg-orange-50 border-orange-200 text-orange-700',
+                    'Blocker': 'bg-red-50 border-red-200 text-red-700'
+                };
+                const colorClass = colors[s.friction] || colors['None'];
+                const card = document.createElement('div');
+                card.className = `shrink-0 w-64 p-3 rounded-lg border shadow-sm flex flex-col gap-2 ${colorClass} relative`;
+                card.innerHTML = `
+                    <button onclick="removeJourneyStep(${i})" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 font-bold">&times;</button>
+                    <input type="text" class="font-bold bg-transparent border-b border-gray-300 focus:border-blue-500 outline-none w-11/12 text-sm" value="${s.label}" onchange="updateJourney(${i}, 'label', this.value)">
+                    <select class="text-xs bg-white border rounded p-1" onchange="updateJourney(${i}, 'friction', this.value)">
+                        <option value="None" ${s.friction === 'None' ? 'selected' : ''}>None</option>
+                        <option value="Minor" ${s.friction === 'Minor' ? 'selected' : ''}>Minor Friction</option>
+                        <option value="Major" ${s.friction === 'Major' ? 'selected' : ''}>Major Pain</option>
+                        <option value="Blocker" ${s.friction === 'Blocker' ? 'selected' : ''}>Blocker</option>
+                    </select>
+                    <input type="text" placeholder="Pain point description" class="text-xs bg-white border rounded p-1 w-full" value="${s.pain}" onchange="updateJourney(${i}, 'pain', this.value)">
+                    <input type="text" placeholder="Proposed Feature" class="text-xs bg-white border rounded p-1 w-full" value="${s.feat}" onchange="updateJourney(${i}, 'feat', this.value)">
+                `;
+                container.appendChild(card);
+            });
+        }
+        function updateJourney(idx, key, val) {
+            journeySteps[idx][key] = val;
+            if(key === 'friction') renderJourney();
+            saveT4();
+        }
+        function removeJourneyStep(idx) {
+            journeySteps.splice(idx, 1);
+            renderJourney();
+            saveT4();
+        }
+        function saveT4() {
+            localStorage.setItem(`t4_${problemKey}`, JSON.stringify(journeySteps));
+        }
+        function loadT4() {
+            const raw = localStorage.getItem(`t4_${problemKey}`);
+            if (raw) journeySteps = JSON.parse(raw);
+            if(journeySteps.length === 0) addJourneyStep({ label: 'Discovery', friction: 'None', pain: '', feat: '' });
+            else renderJourney();
+        }
+
+        // --- Tool 5: Rubric ---
+        function updateT5() {
+            const v1 = parseInt(document.getElementById('t5-s1').value) || 0;
+            const v2 = parseInt(document.getElementById('t5-s2').value) || 0;
+            const v3 = parseInt(document.getElementById('t5-s3').value) || 0;
+            const v4 = parseInt(document.getElementById('t5-s4').value) || 0;
+            
+            document.getElementById('t5-val1').textContent = v1;
+            document.getElementById('t5-val2').textContent = v2;
+            document.getElementById('t5-val3').textContent = v3;
+            document.getElementById('t5-val4').textContent = v4;
+
+            const avg = ((v1 + v2 + v3 + v4) / 4).toFixed(1);
+            document.getElementById('t5-avg').textContent = avg;
+            
+            localStorage.setItem(`t5_${problemKey}`, JSON.stringify([v1, v2, v3, v4]));
+        }
+        function loadT5() {
+            const raw = localStorage.getItem(`t5_${problemKey}`);
+            if (raw) {
+                const vals = JSON.parse(raw);
+                document.getElementById('t5-s1').value = vals[0] || 0;
+                document.getElementById('t5-s2').value = vals[1] || 0;
+                document.getElementById('t5-s3').value = vals[2] || 0;
+                document.getElementById('t5-s4').value = vals[3] || 0;
+                updateT5();
+            }
+        }
+
+        // --- Tool 6: Pitch Builder ---
+        function updateT6(el, counterId, max) {
+            document.getElementById(counterId).textContent = el.value.length;
+            saveT6();
+        }
+        function saveT6() {
+            const data = [
+                document.getElementById('t6-1').value,
+                document.getElementById('t6-2').value,
+                document.getElementById('t6-3').value,
+                document.getElementById('t6-4').value
+            ];
+            localStorage.setItem(`t6_${problemKey}`, JSON.stringify(data));
+        }
+        function loadT6() {
+            const raw = localStorage.getItem(`t6_${problemKey}`);
+            if (raw) {
+                const data = JSON.parse(raw);
+                document.getElementById('t6-1').value = data[0] || '';
+                document.getElementById('t6-2').value = data[1] || '';
+                document.getElementById('t6-3').value = data[2] || '';
+                document.getElementById('t6-4').value = data[3] || '';
+                
+                [1,2,3,4].forEach(i => {
+                    const el = document.getElementById('t6-'+i);
+                    if(el) document.getElementById(`t6-c${i}`).textContent = el.value.length;
+                });
+            }
+        }
+
+        // --- Tool 7: API Registry ---
+        const apiData = [
+            { name: 'OpenWeatherMap', domain: 'Weather', auth: 'Free API Key', snippet: 'fetch("https://api.openweathermap.org/data/2.5/weather?q=London&appid=KEY")' },
+            { name: 'REST Countries', domain: 'Data', auth: 'No Auth', snippet: 'fetch("https://restcountries.com/v3.1/all")' },
+            { name: 'JSONPlaceholder', domain: 'Dev', auth: 'No Auth', snippet: 'fetch("https://jsonplaceholder.typicode.com/posts")' },
+            { name: 'PokeAPI', domain: 'Games', auth: 'No Auth', snippet: 'fetch("https://pokeapi.co/api/v2/pokemon/ditto")' },
+            { name: 'NASA APOD', domain: 'Science', auth: 'Free API Key', snippet: 'fetch("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY")' },
+            { name: 'OpenLibrary', domain: 'Books', auth: 'No Auth', snippet: 'fetch("https://openlibrary.org/search.json?q=the+lord+of+the+rings")' },
+            { name: 'GitHub API', domain: 'Dev', auth: 'OAuth/Token', snippet: 'fetch("https://api.github.com/users/octocat")' },
+            { name: 'News API', domain: 'News', auth: 'Free API Key', snippet: 'fetch("https://newsapi.org/v2/top-headlines?country=us&apiKey=KEY")' },
+            { name: 'The Dog API', domain: 'Animals', auth: 'Free API Key', snippet: 'fetch("https://api.thedogapi.com/v1/images/search")' },
+            { name: 'QuoteGarden', domain: 'Data', auth: 'No Auth', snippet: 'fetch("https://quote-garden.onrender.com/api/v3/quotes/random")' },
+            { name: 'Open Trivia DB', domain: 'Games', auth: 'No Auth', snippet: 'fetch("https://opentdb.com/api.php?amount=10")' },
+            { name: 'CoinGecko', domain: 'Finance', auth: 'No Auth', snippet: 'fetch("https://api.coingecko.com/api/v3/ping")' }
+        ];
+        function renderApis(apis) {
+            const grid = document.getElementById('t7-grid');
+            grid.innerHTML = apis.map(a => `
+                <div class="bg-white p-4 rounded-lg border border-teal-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-teal-900">${a.name}</h4>
+                            <span class="text-[10px] uppercase font-bold bg-teal-100 text-teal-700 px-2 py-0.5 rounded">${a.domain}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">Auth: ${a.auth}</p>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText('${a.snippet.replace(/'/g, "\\'")}'); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy Fetch Snippet', 2000)" class="text-xs w-full bg-teal-50 border border-teal-200 text-teal-700 py-1.5 rounded hover:bg-teal-100 transition">Copy Fetch Snippet</button>
+                </div>
+            `).join('');
+        }
+        function filterApis() {
+            const q = document.getElementById('t7-search').value.toLowerCase();
+            const d = document.getElementById('t7-domain').value;
+            const filtered = apiData.filter(a => {
+                const matchQ = a.name.toLowerCase().includes(q) || a.domain.toLowerCase().includes(q);
+                const matchD = d === 'All' || a.domain === d;
+                return matchQ && matchD;
+            });
+            renderApis(filtered);
+        }
+
+        // --- Tool 8: Idea Forking ---
+        const t8Users = ["Student", "Senior Citizen", "Farmer", "Doctor", "Freelancer", "Commuter", "Retail Worker", "Teacher", "Gamer", "Tourist"];
+        const t8Techs = ["Mobile App", "IoT Sensor", "Chatbot", "Browser Extension", "Smartwatch App", "AR Filter", "Voice Assistant", "Data Dashboard", "Physical Hardware", "Email Newsletter"];
+        const t8Consts = ["Works Offline", "Under $1/user", "No Login Required", "Built in 24 hrs", "Zero text UI", "Gamified", "Open Source", "Integrates with existing tool", "Anonymous", "Accessible (Screen-reader priority)"];
+        let savedCombos = [];
+        let t8InitDone = false;
+
+        function initT8() {
+            if(t8InitDone) return;
+            const pUser = document.getElementById('t8-user');
+            const pTech = document.getElementById('t8-tech');
+            const pConst = document.getElementById('t8-const');
+            
+            t8Users.forEach(x => pUser.add(new Option(x, x)));
+            t8Techs.forEach(x => pTech.add(new Option(x, x)));
+            t8Consts.forEach(x => pConst.add(new Option(x, x)));
+            
+            const raw = localStorage.getItem(`t8_${problemKey}`);
+            if(raw) { savedCombos = JSON.parse(raw); renderT8Saved(); }
+            t8InitDone = true;
+        }
+        
+        function t8Randomize() {
+            const u = t8Users[Math.floor(Math.random() * t8Users.length)];
+            const t = t8Techs[Math.floor(Math.random() * t8Techs.length)];
+            const c = t8Consts[Math.floor(Math.random() * t8Consts.length)];
+            
+            document.getElementById('t8-user').value = u;
+            document.getElementById('t8-tech').value = t;
+            document.getElementById('t8-const').value = c;
+            
+            document.getElementById('t8-output').innerHTML = `A <strong class="text-yellow-600">${t}</strong> for <strong class="text-yellow-600">${u}s</strong> that <strong class="text-yellow-600">${c}</strong>.`;
+        }
+        
+        function t8Save() {
+            const out = document.getElementById('t8-output').textContent;
+            if(out === 'Click Generate to spark an idea!') return;
+            if(!savedCombos.includes(out)) {
+                savedCombos.push(out);
+                localStorage.setItem(`t8_${problemKey}`, JSON.stringify(savedCombos));
+                renderT8Saved();
+            }
+        }
+        
+        function renderT8Saved() {
+            const cont = document.getElementById('t8-saved');
+            cont.innerHTML = savedCombos.map((c, i) => `
+                <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm text-sm">
+                    <span>${c}</span>
+                    <button onclick="t8Remove(${i})" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
+                </div>
+            `).join('');
+        }
+        function t8Remove(i) {
+            savedCombos.splice(i, 1);
+            localStorage.setItem(`t8_${problemKey}`, JSON.stringify(savedCombos));
+            renderT8Saved();
         }
 
         window.onload = loadData;

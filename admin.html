@@ -193,14 +193,43 @@
                                 <p class="text-xs text-gray-500">@${u.handle}</p>
                             </div>
                         </div>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.handle === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}">
-                            ${u.handle === 'admin' ? 'Admin' : 'User'}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.handle === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}">
+                                ${u.handle === 'admin' ? 'Admin' : 'User'}
+                            </span>
+                            <button onclick="promptResetPassword('${u.handle}')" class="text-xs bg-gray-100 hover:bg-amber-100 text-gray-600 hover:text-amber-800 px-2.5 py-1 rounded-lg font-bold transition-colors">
+                                Reset Password
+                            </button>
+                        </div>
                     </div>
                 `).join('');
                 
             } catch (err) {
                 listEl.innerHTML = `<div class="text-center py-10 text-red-500 text-sm">Failed to load users.</div>`;
+            }
+        }
+
+        async function promptResetPassword(handle) {
+            const newPassword = prompt(`Enter new password for @${handle}:`);
+            if (!newPassword) return;
+            if (newPassword.length < 4) {
+                alert("Password must be at least 4 characters long.");
+                return;
+            }
+            try {
+                const res = await fetch('/api/admin/reset_user_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ handle: handle, new_password: newPassword })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    alert("Error resetting password: " + data.error);
+                } else {
+                    alert(`Password for @${handle} updated successfully!`);
+                }
+            } catch (err) {
+                alert("Failed to connect to server.");
             }
         }
 

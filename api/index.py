@@ -444,5 +444,83 @@ def api_admin_create_user():
             conn.close()
 
 
+@app.route('/api/change_password', methods=['POST'])
+def api_change_password():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json() or {}
+    old_password = data.get('old_password', '')
+    new_password = data.get('new_password', '')
+
+    if not old_password or not new_password:
+        return jsonify({"error": "Both current and new passwords are required"}), 400
+
+    if len(new_password) < 4:
+        return jsonify({"error": "New password must be at least 4 characters long"}), 400
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT password FROM users WHERE id = %s;", (session['user_id'],))
+            db_user = fetchone_dict(cur)
+            if not db_user or not check_password_hash(db_user['password'], old_password):
+                return jsonify({"error": "Incorrect current password"}), 400
+
+            new_hashed_pw = generate_password_hash(new_password)
+            cur.execute("UPDATE users SET password = %s WHERE id = %s;", (new_hashed_pw, session['user_id']))
+            conn.commit()
+            return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error in api_change_password: {e}")
+        if conn:
+            conn.rollback()
+        return jsonify({"error": "Database error"}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/api/admin/reset_user_password', methods=['POST'])
+def api_admin_reset_user_password():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json() or {}
+    handle = data.get('handle', '').strip().lower()
+    new_password = data.get('new_password', '')
+
+    if not handle or not new_password:
+        return jsonify({"error": "Handle and new password are required"}), 400
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT handle FROM users WHERE id = %s;", (session['user_id'],))
+            current_user = fetchone_dict(cur)
+            if not current_user or current_user['handle'] != 'admin':
+                return jsonify({"error": "Forbidden"}), 403
+
+            cur.execute("SELECT id FROM users WHERE LOWER(handle) = %s;", (handle,))
+            target_user = fetchone_dict(cur)
+            if not target_user:
+                return jsonify({"error": "User not found"}), 404
+
+            new_hashed_pw = generate_password_hash(new_password)
+            cur.execute("UPDATE users SET password = %s WHERE id = %s;", (new_hashed_pw, target_user['id']))
+            conn.commit()
+            return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error in api_admin_reset_user_password: {e}")
+        if conn:
+            conn.rollback()
+        return jsonify({"error": "Database error"}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

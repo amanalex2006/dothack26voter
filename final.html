@@ -685,7 +685,8 @@
 
             if (!currentUser) {
                 openLoginModal();
-                showLoginError("You must be signed in to vote.");
+                // Show error after modal animation starts
+                setTimeout(() => showLoginError("You must be signed in to vote."), 50);
                 return;
             }
 
@@ -1041,7 +1042,9 @@
                     // Refresh view
                     renderAuthBar();
                     closeLoginModal();
-                    selectTrack(document.querySelector('.track-active').id.replace('card-', ''));
+                    // Re-select current active track (if one exists)
+                    const activeCard = document.querySelector('.track-active');
+                    selectTrack(activeCard ? activeCard.id.replace('card-', '') : 'all');
                 }
             } catch (err) {
                 showLoginError("Failed to connect to authentication server.");
@@ -1055,7 +1058,8 @@
                 userVotes = {};
                 renderAuthBar();
                 // Refresh list to clear vote icons
-                selectTrack(document.querySelector('.track-active').id.replace('card-', ''));
+                const activeCard = document.querySelector('.track-active');
+                selectTrack(activeCard ? activeCard.id.replace('card-', '') : 'all');
             } catch (err) {
                 console.error("Logout failed:", err);
             }

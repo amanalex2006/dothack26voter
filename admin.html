@@ -100,41 +100,63 @@
         </div>
     </div>
 
-    <!-- Problem Detail Inspection Modal -->
+    <!-- Problem Detail Inspection & Edit Modal -->
     <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-6">
-            <div class="flex justify-between items-start border-b border-gray-100 dark:border-slate-800 pb-4">
+            <div class="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-4">
                 <div>
-                    <span id="modalTrack" class="text-xs bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-lg font-bold border border-indigo-200/50 dark:border-indigo-800/40"></span>
-                    <span id="modalSubmitter" class="text-xs text-gray-500 dark:text-slate-400 font-medium ml-2"></span>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white heading-font">Admin Problem Editor</h3>
+                    <span id="modalSubmitter" class="text-xs text-gray-500 dark:text-slate-400 font-medium"></span>
                 </div>
                 <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white font-bold text-2xl leading-none">&times;</button>
             </div>
 
-            <div>
-                <h2 id="modalTitle" class="text-2xl font-bold text-gray-900 dark:text-white heading-font mb-3"></h2>
-                <div id="modalTags" class="flex flex-wrap gap-1.5 mb-2"></div>
-            </div>
+            <form id="editProblemForm" onsubmit="event.preventDefault(); saveEditsOnly();" class="space-y-4 text-sm">
+                <input type="hidden" id="editProblemKey">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">Track</label>
+                        <select id="editTrackKey" class="w-full border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg p-2 text-xs font-medium bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">Tags (Comma-separated)</label>
+                        <input type="text" id="editTags" class="w-full border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg p-2 text-xs" placeholder="e.g. Health, Automation, Bias">
+                    </div>
+                </div>
 
-            <div class="space-y-4 text-sm">
                 <div>
-                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-1">Short Summary</h4>
-                    <p id="modalDetail" class="text-gray-700 dark:text-slate-300 leading-relaxed bg-gray-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800/60"></p>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">Title</label>
+                    <input type="text" id="editTitle" required class="w-full border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg p-2.5 text-sm font-bold">
                 </div>
-                <div>
-                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-1">Context & Background</h4>
-                    <p id="modalContext" class="text-gray-700 dark:text-slate-300 leading-relaxed bg-gray-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800/60"></p>
-                </div>
-                <div>
-                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-1">Consequences & Impact</h4>
-                    <p id="modalImpact" class="text-gray-700 dark:text-slate-300 leading-relaxed bg-gray-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-gray-100 dark:border-slate-800/60"></p>
-                </div>
-            </div>
 
-            <div class="flex gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
-                <button id="modalApproveBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl text-xs transition">✓ Approve Problem</button>
-                <button id="modalRejectBtn" class="flex-1 bg-red-100 dark:bg-red-950/50 hover:bg-red-200 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40 font-bold py-2.5 rounded-xl text-xs transition">✗ Reject Problem</button>
-            </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">Short Summary (Detail)</label>
+                    <textarea id="editDetail" rows="2" required class="w-full border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg p-2.5 text-xs leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">Context & Background</label>
+                    <textarea id="editContext" rows="3" required class="w-full border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg p-2.5 text-xs leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">Consequences & Impact</label>
+                    <textarea id="editImpact" rows="3" required class="w-full border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg p-2.5 text-xs leading-relaxed"></textarea>
+                </div>
+
+                <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-slate-800">
+                    <button type="button" onclick="saveEditsOnly()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                        💾 Save Changes
+                    </button>
+                    <button type="button" onclick="saveAndApprove()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex-1">
+                        ✓ Save & Approve
+                    </button>
+                    <button type="button" onclick="rejectProblemFromModal()" class="bg-red-100 dark:bg-red-950/50 hover:bg-red-200 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                        ✗ Reject
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -288,34 +310,76 @@
             const p = pendingProblems.find(item => item.problem_key === key);
             if (!p) return;
 
-            const trackTitle = tracksMap[p.track_key] || p.track_key;
-            const submitter = p.submitterHandle || 'Unknown';
+            document.getElementById('editProblemKey').value = p.problem_key;
+            document.getElementById('modalSubmitter').textContent = `Submitted by u/${p.submitterHandle || 'Unknown'}`;
 
-            document.getElementById('modalTrack').textContent = trackTitle;
-            document.getElementById('modalSubmitter').textContent = `Submitted by u/${submitter}`;
-            document.getElementById('modalTitle').textContent = p.title;
-            document.getElementById('modalDetail').textContent = p.detail || 'N/A';
-            document.getElementById('modalContext').textContent = p.context || 'N/A';
-            document.getElementById('modalImpact').textContent = p.impact || 'N/A';
+            // Populate track dropdown
+            const trackSelect = document.getElementById('editTrackKey');
+            trackSelect.innerHTML = Object.keys(tracksMap).map(tk => 
+                `<option value="${tk}" ${tk === p.track_key ? 'selected' : ''}>${tracksMap[tk]}</option>`
+            ).join('');
+
+            document.getElementById('editTitle').value = p.title || '';
+            document.getElementById('editDetail').value = p.detail || '';
+            document.getElementById('editContext').value = p.context || '';
+            document.getElementById('editImpact').value = p.impact || '';
 
             let tags = p.tags || [];
             if (typeof tags === 'string') {
                 try { tags = JSON.parse(tags); } catch(e){ tags = []; }
             }
-            document.getElementById('modalTags').innerHTML = (tags || []).map(t => 
-                `<span class="px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 rounded text-xs font-semibold border border-amber-200/60 dark:border-amber-800/40">${t}</span>`
-            ).join('');
-
-            const appBtn = document.getElementById('modalApproveBtn');
-            const rejBtn = document.getElementById('modalRejectBtn');
-            appBtn.onclick = async () => { await updateProblemStatus(p.problem_key, 'approved'); closeDetailModal(); };
-            rejBtn.onclick = async () => { await updateProblemStatus(p.problem_key, 'rejected'); closeDetailModal(); };
+            document.getElementById('editTags').value = (tags || []).join(', ');
 
             document.getElementById('detailModal').style.display = 'flex';
         }
 
         function closeDetailModal() {
             document.getElementById('detailModal').style.display = 'none';
+        }
+
+        function getEditPayload() {
+            const title = document.getElementById('editTitle').value.trim();
+            const detail = document.getElementById('editDetail').value.trim();
+            const context = document.getElementById('editContext').value.trim();
+            const impact = document.getElementById('editImpact').value.trim();
+            const track_key = document.getElementById('editTrackKey').value;
+            const tagsStr = document.getElementById('editTags').value;
+            const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
+
+            return { title, detail, context, impact, track_key, tags };
+        }
+
+        async function saveEditsOnly() {
+            const key = document.getElementById('editProblemKey').value;
+            const payload = getEditPayload();
+
+            const { error } = await supabase.from('problems').update(payload).eq('problem_key', key);
+            if (error) alert("Error saving edits: " + error.message);
+            else {
+                alert("✓ Problem edits saved successfully!");
+                closeDetailModal();
+                await loadPendingProblems();
+            }
+        }
+
+        async function saveAndApprove() {
+            const key = document.getElementById('editProblemKey').value;
+            const payload = getEditPayload();
+            payload.status = 'approved';
+
+            const { error } = await supabase.from('problems').update(payload).eq('problem_key', key);
+            if (error) alert("Error approving problem: " + error.message);
+            else {
+                alert("✓ Problem saved & approved! It is now live on the dashboard.");
+                closeDetailModal();
+                await loadPendingProblems();
+            }
+        }
+
+        async function rejectProblemFromModal() {
+            const key = document.getElementById('editProblemKey').value;
+            await updateProblemStatus(key, 'rejected');
+            closeDetailModal();
         }
 
         async function updateProblemStatus(key, status) {

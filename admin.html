@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Niche Research Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;700&display=swap');
         :root { --bg-primary: #fcfaf7; --text-primary: #1a1c2c; --accent-warm: #d97706; }
@@ -79,7 +79,8 @@
     <script>
         const SUPABASE_URL = 'https://uwpicpzjugdaitccnftn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3cGljcHpqdWdkYWl0Y2NuZnRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3OTkzNzcsImV4cCI6MjEwMDM3NTM3N30.4KyK3dm985ls4B8k43dKv-SKtDqmCaYiMsVXuosHGFQ';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const words = ["blue", "ocean", "jump", "fast", "wind", "tree", "sun", "moon", "star", "bird", "rain", "fire", "rock", "leaf", "code", "data", "link"];
 
         let currentUser = null;

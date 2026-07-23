@@ -6,7 +6,7 @@
     <title>Problem Blueprint: 2898 | Niche Research Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600&display=swap');
 
@@ -270,7 +270,8 @@
     <script>
         const SUPABASE_URL = 'https://uwpicpzjugdaitccnftn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3cGljcHpqdWdkYWl0Y2NuZnRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3OTkzNzcsImV4cCI6MjEwMDM3NTM3N30.4KyK3dm985ls4B8k43dKv-SKtDqmCaYiMsVXuosHGFQ';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Word list for password generation
         const words = ["blue", "ocean", "jump", "fast", "wind", "tree", "sun", "moon", "star", "bird", "rain", "fire", "rock", "leaf", "code", "data", "link"];
@@ -351,9 +352,15 @@
         }
 
         async function fetchData() {
-            const { data: tracks } = await supabase.from('tracks').select('*').order('display_order');
+            const { data: tracks, error: tErr } = await supabase.from('tracks').select('*').order('display_order');
+            if (tErr) {
+                console.error('TRACKS ERROR:', tErr);
+                document.getElementById('trackGrid').innerHTML = `<div class="col-span-full text-center text-red-500 font-bold py-4">Error loading tracks: ${tErr.message}</div>`;
+                return;
+            }
             // Only fetch 'approved' problems for non-admins to render here. Admins can see pending in dashboard.
-            const { data: problems } = await supabase.from('problems').select('*, votes(vote_value)').eq('status', 'approved').order('created_at', { ascending: false });
+            const { data: problems, error: pErr } = await supabase.from('problems').select('*, votes(vote_value)').eq('status', 'approved').order('created_at', { ascending: false });
+            if (pErr) console.error('PROBLEMS ERROR:', pErr);
 
             problemsData = (problems || []).map(p => {
                 const netScore = p.votes ? p.votes.reduce((acc, v) => acc + v.vote_value, 0) : 0;

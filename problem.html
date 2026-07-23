@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Problem Thread | Blueprint 2898</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="/theme.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap');
 
         :root { --bg-primary: #f8fafc; --text-primary: #0f172a; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.2s ease, color 0.2s ease; }
+        html.dark body { background-color: #0b0f19; color: #f1f5f9; }
         h1, h2, h3, .heading-font { font-family: 'Outfit', sans-serif; }
 
         .vote-widget {
@@ -19,28 +22,36 @@
             padding: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             border: 1px solid #e2e8f0;
         }
+        html.dark .vote-widget { background: #1e293b; border-color: #334155; }
         .vote-btn {
             width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
             border-radius: 50%; font-weight: 700; font-size: 0.875rem; cursor: pointer;
             transition: all 0.2s; color: #64748b;
         }
+        html.dark .vote-btn { color: #94a3b8; }
         .vote-btn:hover { background: #f1f5f9; }
+        html.dark .vote-btn:hover { background: #334155; }
         .vote-btn.active-neg { background: #ef4444; color: white; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
         .vote-btn.active-pos { background: #10b981; color: white; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
         .vote-btn.active-zero { background: #94a3b8; color: white; }
 
         .comment-thread { border-left: 2px solid #e2e8f0; margin-left: 1rem; padding-left: 1rem; margin-top: 0.5rem; }
+        html.dark .comment-thread { border-left-color: #334155; }
 
         .slot-machine { display: flex; gap: 0.5rem; margin-top: 1rem; }
         .slot { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; text-align: center; font-weight: 600; min-height: 80px; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; color: #334155; position: relative; overflow: hidden; }
+        html.dark .slot { background: #1e293b; border-color: #334155; color: #cbd5e1; }
         .slot-spinning { animation: shake 0.5s infinite; color: transparent; }
         .slot-spinning::after { content: '🎲'; position: absolute; font-size: 1.5rem; color: #94a3b8; animation: spin 0.2s infinite linear; }
         @keyframes shake { 0% { transform: translateY(0); } 25% { transform: translateY(-2px); } 50% { transform: translateY(2px); } 75% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
         @keyframes spin { 100% { transform: translateY(-20px); opacity: 0; } }
 
         .tab-btn { padding: 0.75rem 1.5rem; font-weight: 600; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; transition: all 0.2s; }
+        html.dark .tab-btn { color: #94a3b8; }
         .tab-btn:hover { color: #1e293b; }
+        html.dark .tab-btn:hover { color: #f8fafc; }
         .tab-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; }
+        html.dark .tab-btn.active { border-bottom-color: #6366f1; color: #818cf8; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
     </style>
@@ -49,11 +60,14 @@
 
     <div class="max-w-4xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-            <button onclick="goBack()" class="flex items-center text-gray-500 hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-200">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <button onclick="goBack()" class="flex items-center text-gray-500 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition-colors bg-white dark:bg-slate-900 px-4 py-2 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 text-xs font-bold">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 Back to Dashboard
             </button>
-            <div id="authStatus" class="text-sm font-semibold text-gray-700"></div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleTheme()" class="theme-toggle-btn text-xs font-bold px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition shadow-sm"></button>
+                <div id="authStatus" class="text-sm font-semibold text-gray-700 dark:text-slate-300"></div>
+            </div>
         </div>
 
         <div id="loading" class="text-center py-20 text-gray-500">Loading problem details...</div>

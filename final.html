@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Problem Blueprint: 2898 | Niche Research Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
     <script src="/public_words.js"></script>
+    <script src="/theme.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;700&display=swap');
 
         :root {
             --bg-primary: #fcfaf7;
@@ -22,6 +24,12 @@
             background-color: var(--bg-primary);
             color: var(--text-primary);
             overflow-x: hidden;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        html.dark body {
+            background-color: #0b0f19;
+            color: #f1f5f9;
         }
 
         h1, h2, h3, .heading-font {
@@ -41,6 +49,8 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        html.dark .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
 
         .track-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -57,6 +67,10 @@
             border-color: var(--accent-warm);
             background-color: #fffbeb;
         }
+        html.dark .track-active {
+            border-color: var(--accent-warm);
+            background-color: #271f10;
+        }
 
         .fade-in { animation: fadeIn 0.5s ease-in forwards; }
         @keyframes fadeIn {
@@ -66,7 +80,7 @@
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
             display: none; justify-content: center; align-items: center; z-index: 50;
             opacity: 0; transition: opacity 0.3s ease;
         }
@@ -76,6 +90,11 @@
             width: 90%; max-width: 500px; transform: scale(0.95);
             transition: transform 0.3s ease; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
+        html.dark .modal-content {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+        }
         .modal-overlay.active .modal-content { transform: scale(1); }
     </style>
 </head>
@@ -84,9 +103,10 @@
     <div class="max-w-6xl mx-auto">
         <!-- Auth Bar -->
         <div id="authBar" class="flex justify-between items-center gap-4 pt-4 mb-2">
-            <div id="userInfo" class="text-sm font-semibold text-gray-700 hidden cursor-pointer hover:text-indigo-600 transition" onclick="openProfileModal()"></div>
-            <div class="flex gap-2 ml-auto">
-                <a href="/admin" id="adminBtn" class="hidden text-gray-500 hover:text-gray-900 text-xs font-bold px-4 py-2">Admin Dashboard</a>
+            <div id="userInfo" class="text-sm font-semibold text-gray-700 dark:text-slate-300 hidden cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition" onclick="openProfileModal()"></div>
+            <div class="flex gap-2 ml-auto items-center">
+                <button onclick="toggleTheme()" class="theme-toggle-btn text-xs font-bold px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition shadow-sm"></button>
+                <a href="/admin" id="adminBtn" class="hidden text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white text-xs font-bold px-3 py-2">Admin Dashboard</a>
                 <button id="addProblemBtn" onclick="openAddModal()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-sm">
                     + Add Problem
                 </button>
@@ -97,28 +117,29 @@
         </div>
 
         <header class="mb-12 text-center">
-            <div class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase bg-amber-100 text-amber-800 rounded-full">
+            <div class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 rounded-full border border-amber-200/50 dark:border-amber-800/40">
                 Research Archive: Blueprint 2898
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">Niche Problems Across Diverse Topics</h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">Niche Problems Across Diverse Topics</h1>
+            <p class="text-lg text-gray-600 dark:text-slate-400 max-w-2xl mx-auto">
                 An exhaustive exploration of specific friction points.
             </p>
         </header>
 
         <!-- Track Selector Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12" id="trackGrid">
-            <div class="text-center text-gray-500 py-4 col-span-full">Loading tracks...</div>
+            <div class="text-center text-gray-500 dark:text-slate-400 py-4 col-span-full">Loading tracks...</div>
         </div>
 
         <!-- Main Content Area -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="text-xl font-bold mb-2 heading-font" id="chartTitle">Track Intensity</h3>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+                    <h3 class="text-xl font-bold mb-2 heading-font text-gray-900 dark:text-white" id="chartTitle">Track Intensity</h3>
                     <div class="chart-container"><canvas id="radarChart"></canvas></div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+                    <h3 class="text-xl font-bold mb-2 heading-font text-gray-900 dark:text-white">Problem Taxonomy</h3>
                     <h3 class="text-xl font-bold mb-2 heading-font">Problem Taxonomy</h3>
                     <div class="chart-container" style="height: 250px;"><canvas id="barChart"></canvas></div>
                 </div>
@@ -388,17 +409,17 @@
             Object.keys(researchData).forEach(key => {
                 const track = researchData[key];
                 const card = document.createElement('div');
-                card.className = `track-card bg-white p-5 rounded-2xl shadow-sm flex flex-col justify-between h-full`;
+                card.className = `track-card bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between h-full hover:border-amber-400 dark:hover:border-amber-500 transition-all`;
                 card.id = `track-btn-${key}`;
                 card.onclick = () => selectTrack(key);
                 
                 card.innerHTML = `
                     <div>
-                        <h3 class="font-bold text-lg heading-font mb-1">${track.title}</h3>
-                        <p class="text-sm text-gray-500 line-clamp-2">${key==='all'?'Global View':track.desc}</p>
+                        <h3 class="font-bold text-lg heading-font mb-1 text-gray-900 dark:text-white">${track.title}</h3>
+                        <p class="text-sm text-gray-500 dark:text-slate-400 line-clamp-2">${key==='all'?'Global View':track.desc}</p>
                     </div>
                     <div class="mt-4 flex items-center justify-between">
-                        <span class="text-xs font-semibold ${key==='all'?'bg-gray-100':'bg-amber-50 text-amber-700'} px-2 py-1 rounded">${track.problems.length} Issues</span>
+                        <span class="text-xs font-semibold ${key==='all'?'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300':'bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40'} px-2.5 py-1 rounded-lg">${track.problems.length} Issues</span>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -425,10 +446,10 @@
             list.innerHTML = '';
             if (!problems || problems.length === 0) { 
                 list.innerHTML = `
-                    <div class="text-center py-12 px-4 border-2 border-dashed border-amber-200/60 rounded-2xl bg-amber-50/30">
-                        <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-3 text-lg font-bold">💡</div>
-                        <h3 class="text-sm font-bold text-gray-800 mb-1">No issues in this track yet</h3>
-                        <p class="text-xs text-gray-500 max-w-xs mx-auto mb-4 leading-relaxed">Be the first to submit a problem statement for this research track!</p>
+                    <div class="text-center py-12 px-4 border-2 border-dashed border-amber-200/60 dark:border-amber-800/40 rounded-2xl bg-amber-50/30 dark:bg-amber-950/20">
+                        <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex items-center justify-center mx-auto mb-3 text-lg font-bold">💡</div>
+                        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">No issues in this track yet</h3>
+                        <p class="text-xs text-gray-500 dark:text-slate-400 max-w-xs mx-auto mb-4 leading-relaxed">Be the first to submit a problem statement for this research track!</p>
                         <button onclick="openAddModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-sm">
                             + Submit a Problem
                         </button>
@@ -439,19 +460,19 @@
 
             problems.forEach((p, idx) => {
                 const tags = typeof p.tags === 'string' ? JSON.parse(p.tags) : p.tags;
-                const tagHtml = (tags || []).map(t => `<span class="px-2.5 py-1 bg-amber-50 text-amber-800 rounded-md text-[11px] font-semibold border border-amber-200/60">${t}</span>`).join('');
+                const tagHtml = (tags || []).map(t => `<span class="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 rounded-md text-[11px] font-semibold border border-amber-200/60 dark:border-amber-800/40">${t}</span>`).join('');
                 
                 const card = document.createElement('div');
-                card.className = `bg-white border border-gray-100 rounded-2xl p-5 hover:border-amber-400 hover:shadow-md transition-all cursor-pointer flex gap-4 fade-in`;
+                card.className = `bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-5 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md transition-all cursor-pointer flex gap-4 fade-in`;
                 card.onclick = () => { window.location.href = `problem.html?id=${p.problem_key}`; };
                 card.innerHTML = `
-                    <div class="flex flex-col items-center justify-center pt-1 px-3 bg-amber-50/60 rounded-xl min-w-[54px] border border-amber-100">
-                        <div class="text-[10px] text-amber-700 uppercase font-bold tracking-wider mb-0.5">Score</div>
-                        <div class="text-lg font-extrabold ${p.score > 0 ? 'text-amber-600' : p.score < 0 ? 'text-rose-600' : 'text-gray-600'}">${p.score > 0 ? '+'+p.score : p.score}</div>
+                    <div class="flex flex-col items-center justify-center pt-1 px-3 bg-amber-50/60 dark:bg-amber-950/40 rounded-xl min-w-[54px] border border-amber-100 dark:border-amber-900/40">
+                        <div class="text-[10px] text-amber-700 dark:text-amber-400 uppercase font-bold tracking-wider mb-0.5">Score</div>
+                        <div class="text-lg font-extrabold ${p.score > 0 ? 'text-amber-600 dark:text-amber-400' : p.score < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-600 dark:text-slate-400'}">${p.score > 0 ? '+'+p.score : p.score}</div>
                     </div>
                     <div class="flex-1">
-                        <h4 class="text-base font-bold text-gray-900 mb-1.5 font-['Outfit'] leading-snug hover:text-amber-700 transition-colors">${p.title}</h4>
-                        <p class="text-gray-600 text-xs mb-3 line-clamp-2 leading-relaxed">${p.detail}</p>
+                        <h4 class="text-base font-bold text-gray-900 dark:text-white mb-1.5 font-['Outfit'] leading-snug hover:text-amber-700 dark:hover:text-amber-400 transition-colors">${p.title}</h4>
+                        <p class="text-gray-600 dark:text-slate-400 text-xs mb-3 line-clamp-2 leading-relaxed">${p.detail}</p>
                         <div class="flex flex-wrap gap-1.5">${tagHtml}</div>
                     </div>
                 `;

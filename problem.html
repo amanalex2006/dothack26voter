@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem Thread | Blueprint 2898</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap');
+
+        :root { --bg-primary: #f8fafc; --text-primary: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); }
+        h1, h2, h3, .heading-font { font-family: 'Outfit', sans-serif; }
+
+        .vote-widget {
+            display: flex; align-items: center; background: #ffffff; border-radius: 9999px;
+            padding: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+        .vote-btn {
+            width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
+            border-radius: 50%; font-weight: 700; font-size: 0.875rem; cursor: pointer;
+            transition: all 0.2s; color: #64748b;
+        }
+        .vote-btn:hover { background: #f1f5f9; }
+        .vote-btn.active-neg { background: #ef4444; color: white; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        .vote-btn.active-pos { background: #10b981; color: white; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+        .vote-btn.active-zero { background: #94a3b8; color: white; }
+
+        .comment-thread { border-left: 2px solid #e2e8f0; margin-left: 1rem; padding-left: 1rem; margin-top: 0.5rem; }
+    </style>
+</head>
+<body class="p-4 md:p-8 pt-6">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="goBack()" class="flex items-center text-gray-500 hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Dashboard
+            </button>
+            <div id="authStatus" class="text-sm font-semibold text-gray-700"></div>
+        </div>
+
+        <div id="loading" class="text-center py-20 text-gray-500">Loading problem details...</div>
+        
+        <div id="content" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8 mb-8 relative">
+                <div class="flex gap-4">
+                    <div class="flex flex-col items-center shrink-0">
+                        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Impact</div>
+                        <div class="vote-widget flex-col w-12 h-auto py-2">
+                            <div class="vote-btn" data-val="3" onclick="castVote(3)">+3</div>
+                            <div class="vote-btn" data-val="2" onclick="castVote(2)">+2</div>
+                            <div class="vote-btn" data-val="1" onclick="castVote(1)">+1</div>
+                            <div class="w-full h-px bg-gray-200 my-1"></div>
+                            <div class="vote-btn" data-val="0" onclick="castVote(0)">0</div>
+                            <div class="w-full h-px bg-gray-200 my-1"></div>
+                            <div class="vote-btn" data-val="-1" onclick="castVote(-1)">-1</div>
+                            <div class="vote-btn" data-val="-2" onclick="castVote(-2)">-2</div>
+                            <div class="vote-btn" data-val="-3" onclick="castVote(-3)">-3</div>
+                        </div>
+                        <div id="netScore" class="mt-3 text-lg font-bold text-gray-800">0</div>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span id="trackBadge" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold uppercase">Track</span>
+                            <span class="text-sm text-gray-500" id="authorInfo">Posted by System</span>
+                            <span id="statusBadge" class="hidden px-2 py-1 rounded text-xs font-bold uppercase ml-auto"></span>
+                        </div>
+                        <h1 class="text-3xl font-bold heading-font text-gray-900 mb-4" id="pTitle">Title</h1>
+                        
+                        <div class="prose prose-slate max-w-none">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Summary</h3>
+                            <p class="text-gray-600 mb-4" id="pDetail"></p>
+                            
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Background Context</h3>
+                            <p class="text-gray-600 mb-4 bg-amber-50 p-4 rounded-lg border border-amber-100" id="pContext"></p>
+                            
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Systemic Impact</h3>
+                            <p class="text-gray-600 mb-4 bg-red-50 p-4 rounded-lg border border-red-100" id="pImpact"></p>
+                        </div>
+
+                        <div id="pTags" class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+                <h3 class="text-xl font-bold heading-font mb-6 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    Discussion (<span id="commentCount">0</span>)
+                </h3>
+
+                <div id="addCommentBox" class="mb-8">
+                    <textarea id="commentText" rows="3" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none" placeholder="What are your thoughts on this problem?"></textarea>
+                    <div class="flex justify-end mt-2">
+                        <button onclick="submitComment()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition-colors disabled:opacity-50" id="submitBtn">
+                            Comment
+                        </button>
+                    </div>
+                    <div id="commentError" class="text-red-500 text-sm text-right mt-1 hidden"></div>
+                </div>
+
+                <div id="commentsTree" class="space-y-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://uwpicpzjugdaitccnftn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3cGljcHpqdWdkYWl0Y2NuZnRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3OTkzNzcsImV4cCI6MjEwMDM3NTM3N30.4KyK3dm985ls4B8k43dKv-SKtDqmCaYiMsVXuosHGFQ';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let problemKey = null;
+        let problemData = null;
+        let userVote = null;
+        let allComments = [];
+
+        const urlParams = new URLSearchParams(window.location.search);
+        problemKey = urlParams.get('id');
+        if (!problemKey) window.location.href = '/';
+
+        function goBack() { window.history.back(); }
+
+        function getSession() {
+            const raw = localStorage.getItem('appSession');
+            if (raw) return JSON.parse(raw);
+            return null;
+        }
+
+        function updateAuthUI() {
+            const authStatus = document.getElementById('authStatus');
+            const commentText = document.getElementById('commentText');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (currentUser) {
+                authStatus.innerHTML = `Logged in as <span class="text-indigo-600">u/${currentUser.handle}</span>`;
+                commentText.disabled = false;
+                submitBtn.disabled = false;
+                commentText.placeholder = "What are your thoughts on this problem?";
+            } else {
+                authStatus.innerHTML = `<a href="/" class="text-amber-600 hover:underline">Sign in on dashboard to vote & comment</a>`;
+                commentText.disabled = true;
+                submitBtn.disabled = true;
+                commentText.placeholder = "Please sign in on the dashboard to comment.";
+            }
+        }
+
+        async function loadData() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('content').classList.add('hidden');
+
+            currentUser = getSession();
+            updateAuthUI();
+
+            const { data: prob, error: pErr } = await supabase
+                .from('problems')
+                .select(`*, tracks(title), app_users(handle, name), votes(user_id, vote_value)`)
+                .eq('problem_key', problemKey)
+                .single();
+
+            if (pErr || !prob) {
+                document.getElementById('loading').textContent = 'Problem not found.';
+                return;
+            }
+            
+            // Access control for pending problems
+            if (prob.status === 'pending' && (!currentUser || currentUser.role !== 'admin')) {
+                document.getElementById('loading').textContent = 'Problem is awaiting admin approval.';
+                return;
+            }
+
+            problemData = prob;
+
+            let netScore = 0;
+            if (prob.votes) {
+                prob.votes.forEach(v => {
+                    netScore += v.vote_value;
+                    if (currentUser && v.user_id === currentUser.id) userVote = v.vote_value;
+                });
+            }
+
+            renderProblem(netScore);
+            await loadComments();
+
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+        }
+
+        function renderProblem(netScore) {
+            document.getElementById('trackBadge').textContent = problemData.tracks?.title || 'Unknown Track';
+            document.getElementById('authorInfo').textContent = problemData.app_users ? `Posted by u/${problemData.app_users.handle}` : `Posted by System`;
+            document.getElementById('pTitle').textContent = problemData.title;
+            document.getElementById('pDetail').textContent = problemData.detail;
+            document.getElementById('pContext').textContent = problemData.context;
+            document.getElementById('pImpact').textContent = problemData.impact;
+            
+            const sb = document.getElementById('statusBadge');
+            if (problemData.status === 'pending') {
+                sb.textContent = "Pending Approval"; sb.className = "px-2 py-1 rounded text-xs font-bold uppercase ml-auto bg-amber-100 text-amber-700"; sb.classList.remove('hidden');
+            } else if (problemData.status === 'rejected') {
+                sb.textContent = "Rejected"; sb.className = "px-2 py-1 rounded text-xs font-bold uppercase ml-auto bg-red-100 text-red-700"; sb.classList.remove('hidden');
+            }
+
+            document.getElementById('netScore').textContent = netScore > 0 ? `+${netScore}` : netScore;
+            updateVoteUI(userVote);
+
+            let tags = problemData.tags || [];
+            if (typeof tags === 'string') tags = JSON.parse(tags);
+            document.getElementById('pTags').innerHTML = tags.map(t => `<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">${t}</span>`).join('');
+        }
+
+        function updateVoteUI(voteVal) {
+            document.querySelectorAll('.vote-btn').forEach(btn => {
+                btn.classList.remove('active-pos', 'active-neg', 'active-zero');
+                const val = parseInt(btn.getAttribute('data-val'), 10);
+                if (val === voteVal) {
+                    if (val > 0) btn.classList.add('active-pos');
+                    else if (val < 0) btn.classList.add('active-neg');
+                    else btn.classList.add('active-zero');
+                }
+            });
+        }
+
+        async function castVote(val) {
+            if (!currentUser) { alert("Please sign in from the dashboard to vote."); return; }
+            if (userVote === val) val = null;
+
+            const oldVote = userVote || 0;
+            const newVal = val || 0;
+            let currentScore = parseInt(document.getElementById('netScore').textContent, 10);
+            
+            currentScore = currentScore - oldVote + newVal;
+            userVote = val;
+            
+            document.getElementById('netScore').textContent = currentScore > 0 ? `+${currentScore}` : currentScore;
+            updateVoteUI(val);
+
+            if (val === null) {
+                await supabase.from('votes').delete().match({ user_id: currentUser.id, problem_key: problemKey });
+            } else {
+                await supabase.from('votes').upsert({ user_id: currentUser.id, problem_key: problemKey, vote_value: val });
+            }
+        }
+
+        async function loadComments() {
+            const { data: comments, error } = await supabase
+                .from('comments')
+                .select(`id, parent_id, content, created_at, app_users(handle, name)`)
+                .eq('problem_key', problemKey)
+                .order('created_at', { ascending: true });
+                
+            allComments = comments || [];
+            document.getElementById('commentCount').textContent = allComments.length;
+            renderComments();
+        }
+
+        function renderComments() {
+            const container = document.getElementById('commentsTree');
+            container.innerHTML = '';
+            const map = {}; const roots = [];
+            allComments.forEach(c => { c.children = []; map[c.id] = c; });
+            allComments.forEach(c => {
+                if (c.parent_id && map[c.parent_id]) map[c.parent_id].children.push(c);
+                else roots.push(c);
+            });
+            if (roots.length === 0) { container.innerHTML = `<div class="text-gray-400 italic">No comments yet. Be the first to share your thoughts!</div>`; return; }
+            roots.forEach(root => { container.appendChild(createCommentElement(root, 0)); });
+        }
+
+        function createCommentElement(comment, depth) {
+            const div = document.createElement('div');
+            div.className = depth > 0 ? "comment-thread" : "mb-4";
+            const timeAgo = moment(comment.created_at).fromNow();
+            const handle = comment.app_users?.handle || 'Unknown';
+
+            div.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold shrink-0">
+                        ${handle.substring(0,2).toUpperCase()}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-semibold text-sm text-gray-900">u/${handle}</span>
+                            <span class="text-xs text-gray-400">&bull; ${timeAgo}</span>
+                        </div>
+                        <div class="text-gray-700 text-sm whitespace-pre-wrap">${comment.content}</div>
+                        <div class="mt-2">
+                            <button onclick="showReplyBox(${comment.id})" class="text-xs font-semibold text-gray-500 hover:text-indigo-600 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg> Reply
+                            </button>
+                            <div id="reply-box-${comment.id}" class="hidden mt-2">
+                                <textarea id="reply-text-${comment.id}" rows="2" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-indigo-500" placeholder="Write a reply..."></textarea>
+                                <div class="flex justify-end gap-2 mt-1">
+                                    <button onclick="hideReplyBox(${comment.id})" class="text-xs px-3 py-1 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
+                                    <button onclick="submitReply(${comment.id})" class="text-xs px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">Reply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            if (comment.children && comment.children.length > 0) {
+                const childrenContainer = document.createElement('div');
+                comment.children.forEach(child => { childrenContainer.appendChild(createCommentElement(child, depth + 1)); });
+                div.appendChild(childrenContainer);
+            }
+            return div;
+        }
+
+        function showReplyBox(id) {
+            if (!currentUser) { alert("Please sign in to reply."); return; }
+            document.getElementById(`reply-box-${id}`).classList.remove('hidden');
+        }
+        function hideReplyBox(id) { document.getElementById(`reply-box-${id}`).classList.add('hidden'); }
+
+        async function submitComment() {
+            const textEl = document.getElementById('commentText');
+            const errEl = document.getElementById('commentError');
+            const content = textEl.value.trim();
+            if (!content) return;
+            errEl.classList.add('hidden');
+            const btn = document.getElementById('submitBtn'); btn.disabled = true;
+
+            const { error } = await supabase.from('comments').insert([{ problem_key: problemKey, user_id: currentUser.id, content: content }]);
+            btn.disabled = false;
+            if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
+            textEl.value = ''; await loadComments();
+        }
+
+        async function submitReply(parentId) {
+            const textEl = document.getElementById(`reply-text-${parentId}`);
+            const content = textEl.value.trim();
+            if (!content) return;
+            const { error } = await supabase.from('comments').insert([{ problem_key: problemKey, user_id: currentUser.id, parent_id: parentId, content: content }]);
+            if (error) { alert("Error submitting reply: " + error.message); return; }
+            hideReplyBox(parentId); await loadComments();
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>

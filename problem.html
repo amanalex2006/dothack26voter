@@ -92,10 +92,16 @@
                     </div>
 
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span id="trackBadge" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold uppercase">Track</span>
-                            <span class="text-sm text-gray-500" id="authorInfo">Posted by System</span>
-                            <span id="statusBadge" class="hidden px-2 py-1 rounded text-xs font-bold uppercase ml-auto"></span>
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            <span id="trackBadge" class="px-2 py-1 bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 rounded text-xs font-bold uppercase border border-indigo-200/50 dark:border-indigo-800/40">Track</span>
+                            <span class="text-sm text-gray-500 dark:text-slate-400" id="authorInfo">Posted by System</span>
+                            <span id="statusBadge" class="hidden px-2 py-1 rounded text-xs font-bold uppercase"></span>
+                            
+                            <div id="problemActionBtns" class="hidden ml-auto flex items-center gap-2">
+                                <button id="deleteProblemBtn" onclick="deleteProblemHandler()" class="text-xs bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200/60 dark:border-red-800/50 hover:bg-red-200 dark:hover:bg-red-900 font-bold px-3 py-1 rounded-lg transition">
+                                    🗑️ Delete Submission
+                                </button>
+                            </div>
                         </div>
                         <h1 class="text-3xl font-bold heading-font text-gray-900 mb-4" id="pTitle">Title</h1>
                         
@@ -547,9 +553,21 @@
             
             const sb = document.getElementById('statusBadge');
             if (problemData.status === 'pending') {
-                sb.textContent = "Pending Approval"; sb.className = "px-2 py-1 rounded text-xs font-bold uppercase ml-auto bg-amber-100 text-amber-700"; sb.classList.remove('hidden');
+                sb.textContent = "Pending Approval"; sb.className = "px-2 py-1 rounded text-xs font-bold uppercase bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40"; sb.classList.remove('hidden');
             } else if (problemData.status === 'rejected') {
-                sb.textContent = "Rejected"; sb.className = "px-2 py-1 rounded text-xs font-bold uppercase ml-auto bg-red-100 text-red-700"; sb.classList.remove('hidden');
+                sb.textContent = "Rejected"; sb.className = "px-2 py-1 rounded text-xs font-bold uppercase bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 border border-red-200/50 dark:border-red-800/40"; sb.classList.remove('hidden');
+            }
+
+            // Action buttons visibility check
+            const actionContainer = document.getElementById('problemActionBtns');
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isOwnerPending = currentUser && problemData && problemData.author_id === currentUser.id && problemData.status === 'pending';
+
+            if (isAdmin || isOwnerPending) {
+                actionContainer.classList.remove('hidden');
+                document.getElementById('deleteProblemBtn').textContent = isAdmin ? '🗑️ Delete Problem (Admin)' : '🗑️ Delete Submission';
+            } else {
+                actionContainer.classList.add('hidden');
             }
 
             document.getElementById('netScore').textContent = netScore > 0 ? `+${netScore}` : netScore;
@@ -557,7 +575,42 @@
 
             let tags = problemData.tags || [];
             if (typeof tags === 'string') tags = JSON.parse(tags);
-            document.getElementById('pTags').innerHTML = tags.map(t => `<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">${t}</span>`).join('');
+            document.getElementById('pTags').innerHTML = tags.map(t => `<span class="px-3 py-1 bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 rounded-full text-xs font-semibold border border-gray-200/50 dark:border-slate-700/60">${t}</span>`).join('');
+        }
+
+        async function deleteProblemHandler() {
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isOwnerPending = currentUser && problemData && problemData.author_id === currentUser.id && problemData.status === 'pending';
+
+            if (!isAdmin && !isOwnerPending) {
+                alert("You do not have permission to delete this problem statement.");
+                return;
+            }
+
+            const confirmMsg = isAdmin
+                ? "ADMIN CONFIRMATION: Are you sure you want to permanently delete this problem statement and all associated data?"
+                : "Are you sure you want to delete your pending problem submission before approval?";
+
+            if (!confirm(confirmMsg)) return;
+
+            // Delete dependent records first to satisfy FK constraints
+            await supabase.from('votes').delete().eq('problem_key', problemKey);
+            await supabase.from('comments').delete().eq('problem_key', problemKey);
+
+            const { data: teamsData } = await supabase.from('teams').select('id').eq('problem_key', problemKey);
+            if (teamsData && teamsData.length > 0) {
+                const teamIds = teamsData.map(t => t.id);
+                await supabase.from('team_roles').delete().in('team_id', teamIds);
+                await supabase.from('teams').delete().eq('problem_key', problemKey);
+            }
+
+            const { error } = await supabase.from('problems').delete().eq('problem_key', problemKey);
+            if (error) {
+                alert("Error deleting problem: " + error.message);
+            } else {
+                alert("Problem submission deleted successfully.");
+                window.location.href = '/';
+            }
         }
 
         function updateVoteUI(voteVal) {

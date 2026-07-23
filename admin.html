@@ -152,8 +152,11 @@
                     <button type="button" onclick="saveAndApprove()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex-1">
                         ✓ Save & Approve
                     </button>
-                    <button type="button" onclick="rejectProblemFromModal()" class="bg-red-100 dark:bg-red-950/50 hover:bg-red-200 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                    <button type="button" onclick="rejectProblemFromModal()" class="bg-amber-100 dark:bg-amber-950/50 hover:bg-amber-200 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40 font-bold px-3 py-2.5 rounded-xl text-xs transition">
                         ✗ Reject
+                    </button>
+                    <button type="button" onclick="deleteProblemFromModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2.5 rounded-xl text-xs transition">
+                        🗑️ Delete
                     </button>
                 </div>
             </form>
@@ -299,7 +302,8 @@
                     </div>
                     <div class="flex gap-2 mt-3">
                         <button onclick="updateProblemStatus('${p.problem_key}', 'approved')" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 rounded text-xs transition">✓ Approve</button>
-                        <button onclick="updateProblemStatus('${p.problem_key}', 'rejected')" class="flex-1 bg-red-100 dark:bg-red-950/50 hover:bg-red-200 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40 font-bold py-1.5 rounded text-xs transition">✗ Reject</button>
+                        <button onclick="updateProblemStatus('${p.problem_key}', 'rejected')" class="bg-amber-100 dark:bg-amber-950/50 hover:bg-amber-200 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40 font-bold px-3 py-1.5 rounded text-xs transition">✗ Reject</button>
+                        <button onclick="deleteProblemAdmin('${p.problem_key}')" class="bg-red-100 dark:bg-red-950/50 hover:bg-red-200 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40 font-bold px-3 py-1.5 rounded text-xs transition">🗑️ Delete</button>
                     </div>
                 `;
                 list.appendChild(div);
@@ -380,6 +384,35 @@
             const key = document.getElementById('editProblemKey').value;
             await updateProblemStatus(key, 'rejected');
             closeDetailModal();
+        }
+
+        async function deleteProblemAdmin(key) {
+            if (!confirm("ADMIN CONFIRMATION: Are you sure you want to permanently delete this problem statement and all associated data?")) return;
+
+            // Delete dependent records first to avoid foreign key violations
+            await supabase.from('votes').delete().eq('problem_key', key);
+            await supabase.from('comments').delete().eq('problem_key', key);
+
+            const { data: teamsData } = await supabase.from('teams').select('id').eq('problem_key', key);
+            if (teamsData && teamsData.length > 0) {
+                const teamIds = teamsData.map(t => t.id);
+                await supabase.from('team_roles').delete().in('team_id', teamIds);
+                await supabase.from('teams').delete().eq('problem_key', key);
+            }
+
+            const { error } = await supabase.from('problems').delete().eq('problem_key', key);
+            if (error) {
+                alert("Error deleting problem: " + error.message);
+            } else {
+                alert("Problem statement permanently deleted.");
+                await loadPendingProblems();
+            }
+        }
+
+        async function deleteProblemFromModal() {
+            const key = document.getElementById('editProblemKey').value;
+            closeDetailModal();
+            await deleteProblemAdmin(key);
         }
 
         async function updateProblemStatus(key, status) {

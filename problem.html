@@ -30,6 +30,19 @@
         .vote-btn.active-zero { background: #94a3b8; color: white; }
 
         .comment-thread { border-left: 2px solid #e2e8f0; margin-left: 1rem; padding-left: 1rem; margin-top: 0.5rem; }
+
+        .slot-machine { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .slot { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; text-align: center; font-weight: 600; min-height: 80px; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; color: #334155; position: relative; overflow: hidden; }
+        .slot-spinning { animation: shake 0.5s infinite; color: transparent; }
+        .slot-spinning::after { content: '🎲'; position: absolute; font-size: 1.5rem; color: #94a3b8; animation: spin 0.2s infinite linear; }
+        @keyframes shake { 0% { transform: translateY(0); } 25% { transform: translateY(-2px); } 50% { transform: translateY(2px); } 75% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+        @keyframes spin { 100% { transform: translateY(-20px); opacity: 0; } }
+
+        .tab-btn { padding: 0.75rem 1.5rem; font-weight: 600; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; transition: all 0.2s; }
+        .tab-btn:hover { color: #1e293b; }
+        .tab-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body class="p-4 md:p-8 pt-6">
@@ -84,27 +97,170 @@
                         </div>
 
                         <div id="pTags" class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100"></div>
+
+                        <!-- Constraint Roulette Engine -->
+                        <div class="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-lg font-bold text-indigo-900 heading-font flex items-center gap-2">
+                                    🎰 Constraint Roulette
+                                </h3>
+                                <button onclick="spinRoulette()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded shadow-sm transition-colors">
+                                    Spin Constraints
+                                </button>
+                            </div>
+                            <p class="text-xs text-indigo-700 mb-4">Force radical scope reduction. How does your solution adapt to these random limits?</p>
+                            
+                            <div class="slot-machine">
+                                <div class="slot" id="slot-persona">Target Persona</div>
+                                <div class="slot" id="slot-tech">Technical Limit</div>
+                                <div class="slot" id="slot-time">Time-to-Value</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
-                <h3 class="text-xl font-bold heading-font mb-6 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                    Discussion (<span id="commentCount">0</span>)
-                </h3>
-
-                <div id="addCommentBox" class="mb-8">
-                    <textarea id="commentText" rows="3" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none" placeholder="What are your thoughts on this problem?"></textarea>
-                    <div class="flex justify-end mt-2">
-                        <button onclick="submitComment()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition-colors disabled:opacity-50" id="submitBtn">
-                            Comment
-                        </button>
-                    </div>
-                    <div id="commentError" class="text-red-500 text-sm text-right mt-1 hidden"></div>
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+                    <button class="tab-btn active shrink-0" id="tabBtn-discussion" onclick="switchTab('discussion')">
+                        Discussion (<span id="commentCount">0</span>)
+                    </button>
+                    <button class="tab-btn shrink-0" id="tabBtn-teams" onclick="switchTab('teams')">
+                        Solutions & Teams (<span id="teamCount">0</span>)
+                    </button>
+                    <button class="tab-btn shrink-0" id="tabBtn-tools" onclick="switchTab('tools')">
+                        Ideation Tools (Local)
+                    </button>
                 </div>
 
-                <div id="commentsTree" class="space-y-6"></div>
+                <!-- Discussion Tab (Red Team Crucible) -->
+                <div id="tab-discussion" class="tab-content active">
+                    <div class="mb-4 bg-red-50 border border-red-100 p-4 rounded-xl">
+                        <h4 class="text-sm font-bold text-red-800 mb-2">🛡️ Red Team Crucible</h4>
+                        <p class="text-xs text-red-700 mb-3">Don't just praise. Stress-test this problem. Use a template below to uncover failure modes.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="insertTemplate('feasibility')" class="text-xs bg-white border border-red-200 text-red-700 px-3 py-1.5 rounded hover:bg-red-100 font-semibold transition">[Feasibility Block]</button>
+                            <button onclick="insertTemplate('alternative')" class="text-xs bg-white border border-red-200 text-red-700 px-3 py-1.5 rounded hover:bg-red-100 font-semibold transition">[Alternative Trap]</button>
+                            <button onclick="insertTemplate('pivot')" class="text-xs bg-white border border-red-200 text-red-700 px-3 py-1.5 rounded hover:bg-red-100 font-semibold transition">[Pivot Recommendation]</button>
+                        </div>
+                    </div>
+
+                    <div id="addCommentBox" class="mb-8">
+                        <textarea id="commentText" rows="4" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none" placeholder="What are your thoughts? Use the Red Team templates above for structured critique."></textarea>
+                        <div class="flex justify-end mt-2">
+                            <button onclick="submitComment()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition-colors disabled:opacity-50" id="submitBtn">
+                                Post Feedback
+                            </button>
+                        </div>
+                        <div id="commentError" class="text-red-500 text-sm text-right mt-1 hidden"></div>
+                    </div>
+                    <div id="commentsTree" class="space-y-6"></div>
+                </div>
+
+                <!-- Teams Tab -->
+                <div id="tab-teams" class="tab-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <p class="text-gray-600 text-sm">Propose a solution to this problem and recruit teammates for the hackathon.</p>
+                        <button onclick="openTeamModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors shadow-sm" id="createTeamBtn" disabled>
+                            + Propose Solution
+                        </button>
+                    </div>
+                    <div id="teamsList" class="space-y-6"></div>
+                </div>
+
+                <!-- Ideation Tools Tab -->
+                <div id="tab-tools" class="tab-content">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-bold text-indigo-900 heading-font mb-2">⏱️ MVP Scope Budget Matrix</h3>
+                        <p class="text-sm text-indigo-700 mb-4">Prevent over-scoping. Calculate your features against your team's total available dev-hours.</p>
+                        
+                        <div class="flex items-center gap-4 mb-4 bg-white p-3 rounded shadow-sm">
+                            <label class="text-sm font-bold text-gray-700">Total Team Dev-Hours Budget:</label>
+                            <input type="number" id="budgetTotal" value="48" class="border rounded w-20 p-1 text-center font-bold" onchange="calculateBudget()">
+                            <span class="text-xs text-gray-500">(e.g., 3 devs × 16 hrs = 48)</span>
+                        </div>
+
+                        <div class="bg-white rounded shadow-sm overflow-hidden mb-4">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="px-4 py-2">Feature Name</th>
+                                        <th class="px-4 py-2 w-32">Priority</th>
+                                        <th class="px-4 py-2 w-24">Est. Hrs</th>
+                                        <th class="px-4 py-2 w-16"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="budgetTableBody">
+                                    <!-- Rows added via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <button onclick="addBudgetRow()" class="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded font-bold hover:bg-indigo-700 mb-4">+ Add Feature</button>
+
+                        <div class="bg-white p-4 rounded shadow-sm">
+                            <div class="flex justify-between text-sm font-bold mb-1">
+                                <span>"Must Have" Hours Scheduled: <span id="budgetUsedTxt">0</span> hrs</span>
+                                <span id="budgetStatusTxt" class="text-green-600">Under Budget</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="budgetBar" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-orange-50 border border-orange-100 rounded-xl p-6">
+                        <h3 class="text-xl font-bold text-orange-900 heading-font mb-2">🛑 Fatal Pitfall Anti-Pattern Checklist</h3>
+                        <p class="text-sm text-orange-700 mb-4">Ensure your pitch and demo avoid the most common hackathon disqualifiers.</p>
+                        
+                        <div class="space-y-3 bg-white p-4 rounded shadow-sm" id="pitfallChecklist">
+                            <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition">
+                                <input type="checkbox" class="pitfall-cb mt-1 w-4 h-4 text-orange-600" data-id="pitfall-1" onchange="savePitfalls()">
+                                <span class="text-sm text-gray-800"><b>Demo starts within the first 45 seconds</b> (No 3-minute intro slides).</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition">
+                                <input type="checkbox" class="pitfall-cb mt-1 w-4 h-4 text-orange-600" data-id="pitfall-2" onchange="savePitfalls()">
+                                <span class="text-sm text-gray-800"><b>Local fallback ready.</b> (A screen-recording is pre-loaded on desktop in case Wi-Fi drops).</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition">
+                                <input type="checkbox" class="pitfall-cb mt-1 w-4 h-4 text-orange-600" data-id="pitfall-3" onchange="savePitfalls()">
+                                <span class="text-sm text-gray-800"><b>Explicit Scope Clarity.</b> You clearly state what was built <i>this weekend</i> versus what is pre-existing boilerplate.</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition">
+                                <input type="checkbox" class="pitfall-cb mt-1 w-4 h-4 text-orange-600" data-id="pitfall-4" onchange="savePitfalls()">
+                                <span class="text-sm text-gray-800"><b>No theoretical jargon.</b> The problem is explained using a tangible, real-world user scenario.</span>
+                            </label>
+                            <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition">
+                                <input type="checkbox" class="pitfall-cb mt-1 w-4 h-4 text-orange-600" data-id="pitfall-5" onchange="savePitfalls()">
+                                <span class="text-sm text-gray-800"><b>Hardcoded limits are acceptable.</b> (You didn't waste 6 hours building a generic Auth system for a 2-minute demo).</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Team Modal -->
+    <div id="teamModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg">
+            <h2 class="text-xl font-bold mb-4">Start a Team</h2>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Team Name / Project Name</label>
+                <input type="text" id="tName" class="w-full border-gray-300 rounded-md p-2 border focus:border-indigo-500" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Solution Pitch</label>
+                <textarea id="tPitch" rows="3" class="w-full border-gray-300 rounded-md p-2 border focus:border-indigo-500" placeholder="Briefly describe your solution approach..." required></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Roles Needed (Comma separated)</label>
+                <input type="text" id="tRoles" class="w-full border-gray-300 rounded-md p-2 border focus:border-indigo-500" placeholder="e.g. Frontend Developer, UI Designer, Data Scientist">
+                <p class="text-xs text-gray-500 mt-1">Leave blank if going solo.</p>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="closeTeamModal()" class="px-4 py-2 border rounded-md text-gray-700">Cancel</button>
+                <button onclick="submitTeam()" class="px-4 py-2 bg-indigo-600 text-white rounded-md font-bold">Create Team</button>
             </div>
         </div>
     </div>
@@ -119,6 +275,7 @@
         let problemData = null;
         let userVote = null;
         let allComments = [];
+        let allTeams = [];
 
         const urlParams = new URLSearchParams(window.location.search);
         problemKey = urlParams.get('id');
@@ -136,16 +293,19 @@
             const authStatus = document.getElementById('authStatus');
             const commentText = document.getElementById('commentText');
             const submitBtn = document.getElementById('submitBtn');
+            const createTeamBtn = document.getElementById('createTeamBtn');
 
             if (currentUser) {
                 authStatus.innerHTML = `Logged in as <span class="text-indigo-600">u/${currentUser.handle}</span>`;
                 commentText.disabled = false;
                 submitBtn.disabled = false;
+                createTeamBtn.disabled = false;
                 commentText.placeholder = "What are your thoughts on this problem?";
             } else {
-                authStatus.innerHTML = `<a href="/" class="text-amber-600 hover:underline">Sign in on dashboard to vote & comment</a>`;
+                authStatus.innerHTML = `<a href="/" class="text-amber-600 hover:underline">Sign in on dashboard to participate</a>`;
                 commentText.disabled = true;
                 submitBtn.disabled = true;
+                createTeamBtn.disabled = true;
                 commentText.placeholder = "Please sign in on the dashboard to comment.";
             }
         }
@@ -186,6 +346,7 @@
 
             renderProblem(netScore);
             await loadComments();
+            await loadTeams();
 
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
@@ -339,6 +500,260 @@
             const { error } = await supabase.from('comments').insert([{ problem_key: problemKey, user_id: currentUser.id, parent_id: parentId, content: content }]);
             if (error) { alert("Error submitting reply: " + error.message); return; }
             hideReplyBox(parentId); await loadComments();
+        }
+
+        // --- Teams & Matchmaking ---
+        async function loadTeams() {
+            const { data: teams, error } = await supabase
+                .from('teams')
+                .select(`
+                    id, team_name, pitch,
+                    app_users(handle),
+                    team_roles(id, role_name, status, user_id, assigned_user:app_users(handle))
+                `)
+                .eq('problem_key', problemKey)
+                .order('created_at', { ascending: false });
+                
+            allTeams = teams || [];
+            document.getElementById('teamCount').textContent = allTeams.length;
+            renderTeams();
+        }
+
+        function renderTeams() {
+            const list = document.getElementById('teamsList');
+            list.innerHTML = '';
+            if (allTeams.length === 0) {
+                list.innerHTML = `<div class="text-gray-400 italic py-4">No solutions proposed yet. Start a team to solve this problem!</div>`;
+                return;
+            }
+
+            allTeams.forEach(team => {
+                const isLeader = currentUser && team.app_users.handle === currentUser.handle;
+                
+                let rolesHtml = '';
+                if (team.team_roles && team.team_roles.length > 0) {
+                    rolesHtml = `<div class="mt-4 border-t border-gray-100 pt-3">
+                        <p class="text-xs font-bold text-gray-500 uppercase mb-2">Team Slots</p>
+                        <div class="space-y-2">`;
+                    team.team_roles.forEach(r => {
+                        const filled = r.status === 'filled';
+                        const mySlot = filled && currentUser && r.user_id === currentUser.id;
+                        let btnHtml = '';
+                        if (!filled && currentUser && !isLeader && !team.team_roles.find(x => x.user_id === currentUser.id)) {
+                            btnHtml = `<button onclick="joinRole('${r.id}')" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-bold hover:bg-indigo-200">Join</button>`;
+                        } else if (!filled && (!currentUser || isLeader)) {
+                            btnHtml = `<span class="text-xs text-gray-400 font-medium px-2 py-1 border border-gray-200 rounded">Open</span>`;
+                        }
+                        
+                        rolesHtml += `
+                            <div class="flex justify-between items-center bg-gray-50 p-2 rounded border ${mySlot ? 'border-indigo-300' : 'border-gray-200'}">
+                                <div class="text-sm font-medium text-gray-700">${r.role_name}</div>
+                                <div class="flex items-center gap-2">
+                                    ${filled ? `<span class="text-xs font-bold text-gray-600 bg-gray-200 px-2 py-1 rounded">Filled: u/${r.assigned_user?.handle}</span>` : btnHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    rolesHtml += `</div></div>`;
+                }
+
+                const el = document.createElement('div');
+                el.className = "bg-white border border-gray-200 rounded-xl p-5 shadow-sm";
+                el.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-lg text-gray-900">${team.team_name}</h4>
+                        <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-2 py-1 rounded">Lead: u/${team.app_users.handle}</span>
+                    </div>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">${team.pitch}</p>
+                    ${rolesHtml}
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        function openTeamModal() {
+            if (!currentUser) return alert("Sign in to start a team.");
+            document.getElementById('teamModal').style.display = 'flex';
+            document.getElementById('tName').value = '';
+            document.getElementById('tPitch').value = '';
+            document.getElementById('tRoles').value = '';
+        }
+        
+        function closeTeamModal() {
+            document.getElementById('teamModal').style.display = 'none';
+        }
+
+        async function submitTeam() {
+            const name = document.getElementById('tName').value.trim();
+            const pitch = document.getElementById('tPitch').value.trim();
+            const rolesStr = document.getElementById('tRoles').value.trim();
+            
+            if (!name || !pitch) return alert("Name and Pitch are required.");
+
+            // Insert Team
+            const { data: newTeam, error: tErr } = await supabase.from('teams').insert([{
+                problem_key: problemKey, leader_user_id: currentUser.id, team_name: name, pitch: pitch
+            }]).select().single();
+
+            if (tErr) { alert("Error creating team."); return; }
+
+            // Insert Roles if specified
+            if (rolesStr) {
+                const roles = rolesStr.split(',').map(r => r.trim()).filter(Boolean);
+                const roleInserts = roles.map(r => ({ team_id: newTeam.id, role_name: r, status: 'open' }));
+                if (roleInserts.length > 0) {
+                    await supabase.from('team_roles').insert(roleInserts);
+                }
+            }
+
+            closeTeamModal();
+            await loadTeams();
+        }
+
+        async function joinRole(roleId) {
+            if (!currentUser) return alert("Sign in to join a team.");
+            
+            const { error } = await supabase.from('team_roles').update({
+                status: 'filled', user_id: currentUser.id
+            }).eq('id', roleId);
+
+            if (error) alert("Error joining role.");
+            else await loadTeams();
+        }
+
+        // --- Constraint Roulette Engine ---
+        const cPersonas = ["Seniors (Zero Tech Literacy)", "College Students on a Budget", "Small Business Owners", "Off-grid Rural Workers", "Gig Economy Drivers"];
+        const cTechs = ["Must function completely Offline", "No LLMs/Generative AI allowed", "Voice Interface Only (No Screens)", "Uses SMS/Text Messaging only", "Blockchain/Web3 Backend"];
+        const cTimes = ["Core utility in < 15 seconds", "Must replace a 1-hour process", "Setup takes zero configuration", "Must show ROI in 24 hours", "Passive (zero manual input)"];
+
+        function spinRoulette() {
+            const slotP = document.getElementById('slot-persona');
+            const slotT = document.getElementById('slot-tech');
+            const slotV = document.getElementById('slot-time');
+            
+            slotP.classList.add('slot-spinning');
+            slotT.classList.add('slot-spinning');
+            slotV.classList.add('slot-spinning');
+
+            setTimeout(() => {
+                slotP.classList.remove('slot-spinning');
+                slotP.textContent = "Persona:\n" + cPersonas[Math.floor(Math.random() * cPersonas.length)];
+            }, 500);
+
+            setTimeout(() => {
+                slotT.classList.remove('slot-spinning');
+                slotT.textContent = "Constraint:\n" + cTechs[Math.floor(Math.random() * cTechs.length)];
+            }, 1000);
+
+            setTimeout(() => {
+                slotV.classList.remove('slot-spinning');
+                slotV.textContent = "Time-to-Value:\n" + cTimes[Math.floor(Math.random() * cTimes.length)];
+            }, 1500);
+        }
+
+        // --- Red Team Crucible Templates ---
+        function insertTemplate(type) {
+            const txt = document.getElementById('commentText');
+            let template = "";
+            if (type === 'feasibility') {
+                template = "**[Feasibility Block]**\n*Technical/Operational Failure Mode (24-48h limit):*\n> I believe this will fail because...\n\n*Suggested Mitigation:*\n> To fix this, the team should...";
+            } else if (type === 'alternative') {
+                template = "**[Alternative Trap]**\n*Existing Competitors/Solutions:*\n> People already use X to solve this...\n\n*Why would users switch? (Or why won't they?):*\n> ...";
+            } else if (type === 'pivot') {
+                template = "**[Pivot Recommendation]**\n*This is too broad. The Absolute Minimum Viable Slice is:*\n> Focus ONLY on...";
+            }
+            txt.value = template;
+            txt.focus();
+        }
+
+        // --- Tabs ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`tabBtn-${tabId}`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            if (tabId === 'tools') {
+                loadPitfalls();
+                if (document.getElementById('budgetTableBody').children.length === 0) addBudgetRow();
+            }
+        }
+
+        // --- MVP Scope Budget Matrix ---
+        function addBudgetRow() {
+            const tbody = document.getElementById('budgetTableBody');
+            const tr = document.createElement('tr');
+            tr.className = "border-b hover:bg-gray-50";
+            tr.innerHTML = `
+                <td class="px-4 py-2"><input type="text" placeholder="Feature description..." class="w-full border-gray-300 rounded p-1 text-sm"></td>
+                <td class="px-4 py-2">
+                    <select class="w-full border-gray-300 rounded p-1 text-sm bg-white" onchange="calculateBudget()">
+                        <option value="Must Have">Must Have</option>
+                        <option value="Should Have">Should Have</option>
+                        <option value="Could Have">Could Have</option>
+                        <option value="Won't Have">Won't Have</option>
+                    </select>
+                </td>
+                <td class="px-4 py-2"><input type="number" min="0" value="0" class="w-full border-gray-300 rounded p-1 text-sm text-center" onchange="calculateBudget()"></td>
+                <td class="px-4 py-2 text-center"><button onclick="this.parentElement.parentElement.remove(); calculateBudget();" class="text-red-500 hover:text-red-700 font-bold">&times;</button></td>
+            `;
+            tbody.appendChild(tr);
+            calculateBudget();
+        }
+
+        function calculateBudget() {
+            const budgetTotal = parseInt(document.getElementById('budgetTotal').value, 10) || 48;
+            let mustHaveHrs = 0;
+            
+            const rows = document.getElementById('budgetTableBody').querySelectorAll('tr');
+            rows.forEach(tr => {
+                const select = tr.querySelector('select');
+                const num = tr.querySelector('input[type="number"]');
+                if (select && select.value === 'Must Have' && num) {
+                    mustHaveHrs += (parseInt(num.value, 10) || 0);
+                }
+            });
+
+            document.getElementById('budgetUsedTxt').textContent = mustHaveHrs;
+            
+            const pct = Math.min((mustHaveHrs / budgetTotal) * 100, 100);
+            const bar = document.getElementById('budgetBar');
+            const statusTxt = document.getElementById('budgetStatusTxt');
+            
+            bar.style.width = pct + '%';
+            
+            if (mustHaveHrs > budgetTotal) {
+                bar.className = 'bg-red-600 h-2.5 rounded-full';
+                statusTxt.textContent = "OVER BUDGET! (Cut Scope)";
+                statusTxt.className = "text-red-600 font-bold";
+            } else if (mustHaveHrs > budgetTotal * 0.8) {
+                bar.className = 'bg-amber-500 h-2.5 rounded-full';
+                statusTxt.textContent = "Warning: Tight Budget";
+                statusTxt.className = "text-amber-600 font-bold";
+            } else {
+                bar.className = 'bg-green-600 h-2.5 rounded-full';
+                statusTxt.textContent = "Under Budget";
+                statusTxt.className = "text-green-600 font-bold";
+            }
+        }
+
+        // --- Pitfall Checklist ---
+        function savePitfalls() {
+            const checks = {};
+            document.querySelectorAll('.pitfall-cb').forEach(cb => {
+                checks[cb.getAttribute('data-id')] = cb.checked;
+            });
+            localStorage.setItem(`pitfalls_${problemKey}`, JSON.stringify(checks));
+        }
+        
+        function loadPitfalls() {
+            const saved = localStorage.getItem(`pitfalls_${problemKey}`);
+            if (saved) {
+                const checks = JSON.parse(saved);
+                document.querySelectorAll('.pitfall-cb').forEach(cb => {
+                    const id = cb.getAttribute('data-id');
+                    if (checks[id]) cb.checked = true;
+                });
+            }
         }
 
         window.onload = loadData;

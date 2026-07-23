@@ -334,11 +334,11 @@
             }
             document.getElementById('editTags').value = (tags || []).join(', ');
 
-            document.getElementById('detailModal').style.display = 'flex';
+            document.getElementById('detailModal').classList.remove('hidden');
         }
 
         function closeDetailModal() {
-            document.getElementById('detailModal').style.display = 'none';
+            document.getElementById('detailModal').classList.add('hidden');
         }
 
         function getEditPayload() {
@@ -492,11 +492,11 @@
         function openResetModal(userId, handle) {
             selectedResetUserId = userId;
             document.getElementById('resetHandle').textContent = `u/${handle}`;
-            document.getElementById('resetModal').style.display = 'flex';
+            document.getElementById('resetModal').classList.remove('hidden');
             generateResetPass();
         }
         function closeResetModal() {
-            document.getElementById('resetModal').style.display = 'none';
+            document.getElementById('resetModal').classList.add('hidden');
         }
         function generateResetPass() {
             document.getElementById('newResetPass').value = generatePassword();

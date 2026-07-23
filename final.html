@@ -140,18 +140,18 @@
                 </div>
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
                     <h3 class="text-xl font-bold mb-2 heading-font text-gray-900 dark:text-white">Problem Taxonomy</h3>
-                    <h3 class="text-xl font-bold mb-2 heading-font">Problem Taxonomy</h3>
+
                     <div class="chart-container" style="height: 250px;"><canvas id="barChart"></canvas></div>
                 </div>
             </div>
 
             <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col h-full">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold heading-font" id="activeTrackTitle">Select a Track</h2>
-                        <span class="text-sm bg-gray-100 px-3 py-1 rounded-full font-medium" id="problemCount">0 Issues</span>
+                        <h2 class="text-2xl font-bold heading-font text-gray-900 dark:text-white" id="activeTrackTitle">Select a Track</h2>
+                        <span class="text-sm bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-3 py-1 rounded-full font-medium" id="problemCount">0 Issues</span>
                     </div>
-                    <div id="problemDescription" class="text-gray-600 mb-6 italic border-l-4 border-amber-200 pl-4"></div>
+                    <div id="problemDescription" class="text-gray-600 dark:text-slate-400 mb-6 italic border-l-4 border-amber-200 dark:border-amber-800 pl-4"></div>
                     <div id="problemList" class="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2"></div>
                 </div>
             </div>
@@ -480,12 +480,6 @@
             });
         }
 
-        // --- Password Generator (2-word, diverse) ---
-        const adjectives = ["swift","bright","dark","hollow","amber","crisp","silver","bold","quiet","solar","lunar","iron","copper","wild","frozen","velvet","glassy","rusted","bitter","jade","neon","ashen","mossy","dusty","stark","pale","vivid","sharp","delta","cobalt"];
-        const nouns = ["ridge","vault","storm","forge","cliff","ember","grove","prism","flare","drift","haven","thorn","crater","spire","basin","nexus","glyph","orbit","marsh","titan","comet","raven","shroud","flint","abyss","bloom","quartz","zenith","shard","void"];
-
-        function generateWords() {
-            const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
         // --- Decaying Password Input Controllers ---
         let decayLoginPass = null;
         let decayProfOld = null;

@@ -519,9 +519,11 @@
                 return;
             }
             
-            // Access control for pending problems
-            if (prob.status === 'pending' && (!currentUser || currentUser.role !== 'admin')) {
-                document.getElementById('loading').textContent = 'Problem is awaiting admin approval.';
+            // Access control for pending problems — allow admin or the submitting author
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isOwner = currentUser && prob.author_id === currentUser.id;
+            if (prob.status === 'pending' && !isAdmin && !isOwner) {
+                document.getElementById('loading').textContent = 'This problem is awaiting admin approval.';
                 return;
             }
 

@@ -194,8 +194,14 @@
             const list = document.getElementById('pendingList');
             list.innerHTML = '';
 
-            if (pendingProblems.length === 0) {
-                list.innerHTML = `<div class="text-center py-10 text-gray-400 text-sm">No pending problems. ✅</div>`;
+            if (!pendingProblems || pendingProblems.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12 px-4 border-2 border-dashed border-green-200/60 rounded-2xl bg-green-50/30">
+                        <div class="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto mb-3 text-lg font-bold">✨</div>
+                        <h4 class="text-sm font-bold text-gray-800 mb-1">Queue is clear!</h4>
+                        <p class="text-xs text-gray-500 max-w-xs mx-auto">No problem submissions awaiting review right now.</p>
+                    </div>
+                `;
                 return;
             }
 

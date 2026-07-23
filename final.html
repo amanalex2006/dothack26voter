@@ -423,24 +423,36 @@
         function renderProblemsList(problems) {
             const list = document.getElementById('problemList');
             list.innerHTML = '';
-            if (problems.length === 0) { list.innerHTML = `<div class="text-center text-gray-500 py-8">No problems found.</div>`; return; }
+            if (!problems || problems.length === 0) { 
+                list.innerHTML = `
+                    <div class="text-center py-12 px-4 border-2 border-dashed border-amber-200/60 rounded-2xl bg-amber-50/30">
+                        <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-3 text-lg font-bold">💡</div>
+                        <h3 class="text-sm font-bold text-gray-800 mb-1">No issues in this track yet</h3>
+                        <p class="text-xs text-gray-500 max-w-xs mx-auto mb-4 leading-relaxed">Be the first to submit a problem statement for this research track!</p>
+                        <button onclick="openAddModal()" class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-sm">
+                            + Submit a Problem
+                        </button>
+                    </div>
+                `; 
+                return; 
+            }
 
             problems.forEach((p, idx) => {
                 const tags = typeof p.tags === 'string' ? JSON.parse(p.tags) : p.tags;
-                const tagHtml = (tags || []).map(t => `<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium border border-gray-200">${t}</span>`).join('');
+                const tagHtml = (tags || []).map(t => `<span class="px-2.5 py-1 bg-amber-50 text-amber-800 rounded-md text-[11px] font-semibold border border-amber-200/60">${t}</span>`).join('');
                 
                 const card = document.createElement('div');
-                card.className = `bg-white border border-gray-200 rounded-xl p-5 hover:border-amber-300 hover:shadow-md cursor-pointer flex gap-4 fade-in`;
+                card.className = `bg-white border border-gray-100 rounded-2xl p-5 hover:border-amber-400 hover:shadow-md transition-all cursor-pointer flex gap-4 fade-in`;
                 card.onclick = () => { window.location.href = `problem.html?id=${p.problem_key}`; };
                 card.innerHTML = `
-                    <div class="flex flex-col items-center pt-1 min-w-[40px]">
-                        <div class="text-xs text-gray-400 uppercase font-bold">Score</div>
-                        <div class="text-xl font-bold ${p.score > 0 ? 'text-amber-600' : 'text-gray-700'}">${p.score > 0 ? '+'+p.score : p.score}</div>
+                    <div class="flex flex-col items-center justify-center pt-1 px-3 bg-amber-50/60 rounded-xl min-w-[54px] border border-amber-100">
+                        <div class="text-[10px] text-amber-700 uppercase font-bold tracking-wider mb-0.5">Score</div>
+                        <div class="text-lg font-extrabold ${p.score > 0 ? 'text-amber-600' : p.score < 0 ? 'text-rose-600' : 'text-gray-600'}">${p.score > 0 ? '+'+p.score : p.score}</div>
                     </div>
                     <div class="flex-1">
-                        <h4 class="text-lg font-bold text-gray-900 mb-2 font-['Outfit']">${p.title}</h4>
-                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">${p.detail}</p>
-                        <div class="flex flex-wrap gap-2">${tagHtml}</div>
+                        <h4 class="text-base font-bold text-gray-900 mb-1.5 font-['Outfit'] leading-snug hover:text-amber-700 transition-colors">${p.title}</h4>
+                        <p class="text-gray-600 text-xs mb-3 line-clamp-2 leading-relaxed">${p.detail}</p>
+                        <div class="flex flex-wrap gap-1.5">${tagHtml}</div>
                     </div>
                 `;
                 list.appendChild(card);

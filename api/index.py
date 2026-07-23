@@ -2,6 +2,7 @@ from flask import Flask, send_from_directory, request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import ssl
+import sqlite3
 import pg8000.dbapi
 from urllib.parse import urlparse
 from dotenv import load_dotenv
@@ -14,7 +15,7 @@ PARENT_DIR = os.path.dirname(BASE_DIR)
 
 app = Flask(__name__)
 # Secret key for session cookie encryption
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_fallback_secret_key_129837128937')
+app.secret_key = os.environ.get('FLASK_SECRET_KEY') or 'default_fallback_secret_key_129837128937'
 
 # Force secure cookies in production (HTTPS)
 IS_PRODUCTION = os.environ.get('VERCEL_ENV') in ('production', 'preview')
@@ -23,10 +24,60 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 
+class SQLiteCursorWrapper:
+    def __init__(self, cur):
+        self.cur = cur
+
+    @property
+    def description(self):
+        return self.cur.description
+
+    def execute(self, query, params=()):
+        # Convert PostgreSQL %s placeholders to SQLite ? placeholders
+        sqlite_query = query.replace("%s", "?")
+        # Convert SERIAL to INTEGER PRIMARY KEY AUTOINCREMENT for SQLite table creation
+        sqlite_query = sqlite_query.replace("SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+        self.cur.execute(sqlite_query, params)
+        return self
+
+    def fetchone(self):
+        return self.cur.fetchone()
+
+    def fetchall(self):
+        return self.cur.fetchall()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cur.close()
+
+
+class SQLiteConnectionWrapper:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def cursor(self):
+        return SQLiteCursorWrapper(self.conn.cursor())
+
+    def commit(self):
+        self.conn.commit()
+
+    def rollback(self):
+        self.conn.rollback()
+
+    def close(self):
+        self.conn.close()
+
+
 def get_db_connection():
-    database_url = os.environ.get('DATABASE_URL', '')
+    database_url = os.environ.get('DATABASE_URL', '').strip()
+    
+    # If DATABASE_URL is not set, use local SQLite database file as fallback for seamless local dev
     if not database_url:
-        raise ValueError("DATABASE_URL environment variable is not set!")
+        db_path = os.path.join(PARENT_DIR, 'local_dev.db')
+        sqlite_conn = sqlite3.connect(db_path)
+        return SQLiteConnectionWrapper(sqlite_conn)
 
     # Correct legacy postgres:// prefix
     if database_url.startswith("postgres://"):
@@ -90,11 +141,6 @@ def get_initials(name):
 
 # Database Setup — called lazily on first request so env vars are available
 def init_db():
-    database_url = os.environ.get('DATABASE_URL', '')
-    if not database_url:
-        print("Warning: DATABASE_URL is not set. Skipping database initialization.")
-        return
-
     conn = None
     try:
         conn = get_db_connection()
@@ -119,16 +165,24 @@ def init_db():
                 );
             """)
 
-            # Seed default admin account if it doesn't exist
-            cur.execute("SELECT id FROM users WHERE handle = 'admin';")
-            if not cur.fetchone():
-                admin_pw = os.environ.get('ADMIN_PASSWORD', 'admin123')
-                hashed_pw = generate_password_hash(admin_pw)
+            # Seed default admin account if it doesn't exist or password mismatch
+            cur.execute("SELECT id, password FROM users WHERE LOWER(handle) = 'admin';")
+            admin_user = fetchone_dict(cur)
+            admin_pw = os.environ.get('ADMIN_PASSWORD') or 'admin123'
+            hashed_pw = generate_password_hash(admin_pw)
+
+            if not admin_user:
                 cur.execute(
                     "INSERT INTO users (name, handle, password) VALUES (%s, %s, %s);",
                     ('Admin User', 'admin', hashed_pw)
                 )
                 print("Admin user seeded successfully.")
+            elif not check_password_hash(admin_user['password'], admin_pw):
+                cur.execute(
+                    "UPDATE users SET password = %s WHERE LOWER(handle) = 'admin';",
+                    (hashed_pw,)
+                )
+                print("Admin user password updated successfully.")
 
             conn.commit()
             print("Database initialized successfully.")
@@ -217,7 +271,6 @@ def api_init():
 
     except Exception as e:
         print(f"Error in api_init: {e}")
-        # Return gracefully — frontend can handle empty data
     finally:
         if conn:
             conn.close()

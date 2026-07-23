@@ -438,7 +438,136 @@
             document.getElementById('problemCount').textContent = `${track.problems.length} Issues`;
             
             renderProblemsList(track.problems);
-            // Ignore charts here for brevity
+            updateCharts(track);
+        }
+
+        let radarChartInstance = null;
+        let barChartInstance = null;
+
+        function updateCharts(track) {
+            if (!track) return;
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#475569';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+
+            const chartTitleEl = document.getElementById('chartTitle');
+            if (chartTitleEl) chartTitleEl.textContent = `${track.title} Intensity`;
+
+            // 1. Radar Chart (Track Intensity)
+            const statsData = (track && track.stats) ? track.stats : [75, 65, 80, 60, 70];
+            const radarLabels = ['Market Need', 'Tech Complexity', 'User Friction', 'Adoption Barrier', 'Regulatory Risk'];
+
+            const radarCanvas = document.getElementById('radarChart');
+            if (radarCanvas) {
+                if (radarChartInstance) radarChartInstance.destroy();
+                radarChartInstance = new Chart(radarCanvas.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: radarLabels,
+                        datasets: [{
+                            label: track.title,
+                            data: Array.isArray(statsData) ? statsData : [75, 65, 80, 60, 70],
+                            backgroundColor: isDark ? 'rgba(217, 119, 6, 0.3)' : 'rgba(217, 119, 6, 0.2)',
+                            borderColor: '#d97706',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#d97706',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#d97706'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: gridColor },
+                                grid: { color: gridColor },
+                                pointLabels: { color: textColor, font: { family: 'Inter', size: 10, weight: '600' } },
+                                ticks: { display: false, min: 0, max: 100 }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+
+            // 2. Bar Chart (Problem Taxonomy)
+            let barLabels = [];
+            let barValues = [];
+
+            if (track.problems && track.problems.length > 0) {
+                let tagCounts = {};
+                track.problems.forEach(p => {
+                    let tags = p.tags || [];
+                    if (typeof tags === 'string') {
+                        try { tags = JSON.parse(tags); } catch(e) { tags = []; }
+                    }
+                    (tags || []).forEach(t => {
+                        tagCounts[t] = (tagCounts[t] || 0) + 1;
+                    });
+                });
+                const sortedTags = Object.entries(tagCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+                if (sortedTags.length > 0) {
+                    barLabels = sortedTags.map(t => t[0]);
+                    barValues = sortedTags.map(t => t[1]);
+                }
+            }
+
+            if (barLabels.length === 0) {
+                barLabels = ['Technical', 'Operational', 'Financial', 'User UX', 'Compliance'];
+                barValues = Array.isArray(track.tax) ? track.tax : [14, 22, 18, 29, 12];
+            }
+
+            const barCanvas = document.getElementById('barChart');
+            if (barCanvas) {
+                if (barChartInstance) barChartInstance.destroy();
+                barChartInstance = new Chart(barCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: barLabels,
+                        datasets: [{
+                            label: 'Issues Count',
+                            data: barValues,
+                            backgroundColor: [
+                                'rgba(99, 102, 241, 0.75)',
+                                'rgba(217, 119, 6, 0.75)',
+                                'rgba(16, 185, 129, 0.75)',
+                                'rgba(244, 63, 94, 0.75)',
+                                'rgba(139, 92, 246, 0.75)'
+                            ],
+                            borderColor: [
+                                '#6366f1',
+                                '#d97706',
+                                '#10b981',
+                                '#f43f5e',
+                                '#8b5cf6'
+                            ],
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: textColor, font: { family: 'Inter', size: 10 } }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, font: { family: 'Inter', size: 10 }, stepSize: 1, beginAtZero: true }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
         }
 
         function renderProblemsList(problems) {
